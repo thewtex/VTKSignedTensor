@@ -25,10 +25,10 @@ int main( int argc, char * argv[] )
     return 1;
     }
 
-  vtkSmartPointer< vtkCamera > camera = vtkSmartPointer< vtkCamera >::New();
-  camera->SetViewUp     (0.0, 1.0, 0.0);
-  camera->SetFocalPoint (404.70907910888917, -202.13628697726463, 0.0);
-  camera->SetPosition   (404.70907910888917, -202.13628697726463, 850.1861762830398);
+  //vtkSmartPointer< vtkCamera > camera = vtkSmartPointer< vtkCamera >::New();
+  //camera->SetViewUp     (0.0, 1.0, 0.0);
+  //camera->SetFocalPoint (404.70907910888917, -202.13628697726463, 0.0);
+  //camera->SetPosition   (404.70907910888917, -202.13628697726463, 850.1861762830398);
 
   vtkSmartPointer< vtkStructuredPointsReader > reader = vtkSmartPointer< vtkStructuredPointsReader >::New();
   reader->SetFileName( argv[1] );
@@ -37,18 +37,15 @@ int main( int argc, char * argv[] )
   vtkSmartPointer< vtkStructuredPoints > structuredPoints = reader->GetOutput();
   const int * dimensions = structuredPoints->GetDimensions();
 
-  vtkSmartPointer< vtkExtractVOI > extractor = vtkSmartPointer< vtkExtractVOI >::New();
-  extractor->SetVOI( 0, dimensions[0] - 1, 0, dimensions[1] - 1, 0, dimensions[2] - 1 );
-  extractor->SetSampleRate( 20, 20, 1 );
-  extractor->SetInputConnection( reader->GetOutputPort() );
-
   vtkSmartPointer< vtkSphereSource > sphere = vtkSmartPointer< vtkSphereSource >::New();
+  sphere->SetThetaResolution( 50 );
+  sphere->SetPhiResolution( 50 );
   vtkSmartPointer< vtkTensorGlyph > tensorGlyph = vtkSmartPointer< vtkTensorGlyph >::New();
   tensorGlyph->SetSourceConnection( sphere->GetOutputPort() );
-  tensorGlyph->SetInputConnection( extractor->GetOutputPort() );
+  tensorGlyph->SetInputConnection( reader->GetOutputPort() );
   tensorGlyph->SetColorModeToEigenvalues();
   tensorGlyph->SetExtractEigenvalues( true );
-  tensorGlyph->SetScaleFactor( 5000.0 );
+  tensorGlyph->SetScaleFactor( 0.7 );
   tensorGlyph->SetScaling( true );
 
   // this is needed to prevent some of the glyphs going black.
@@ -70,7 +67,7 @@ int main( int argc, char * argv[] )
 
   vtkSmartPointer< vtkActor > actor = vtkSmartPointer< vtkActor >::New();
   actor->SetMapper( mapper );
-  actor->RotateZ( -90.0 );
+  //actor->RotateZ( -90.0 );
 
   vtkSmartPointer< vtkOutlineFilter > outline = vtkSmartPointer< vtkOutlineFilter >::New();
   outline->SetInputConnection( reader->GetOutputPort() );
@@ -78,11 +75,11 @@ int main( int argc, char * argv[] )
   outlineMapper->SetInputConnection( outline->GetOutputPort() );
   vtkSmartPointer< vtkActor > outlineActor = vtkSmartPointer< vtkActor >::New();
   outlineActor->SetMapper( outlineMapper );
-  outlineActor->RotateZ( -90.0 );
+  //outlineActor->RotateZ( -90.0 );
 
   vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
   renderer->SetBackground( 0.2, 0.2, 0.2 );
-  renderer->SetActiveCamera( camera );
+  //renderer->SetActiveCamera( camera );
   renderer->AddActor( actor );
   renderer->AddActor( outlineActor );
 
