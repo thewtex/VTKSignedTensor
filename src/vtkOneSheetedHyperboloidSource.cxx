@@ -32,6 +32,9 @@ vtkStandardNewMacro(vtkOneSheetedHyperboloidSource);
 vtkOneSheetedHyperboloidSource::vtkOneSheetedHyperboloidSource(int res)
 {
   res = res < 4 ? 4 : res;
+  this->ShapeParameters[0] = 0.1;
+  this->ShapeParameters[1] = 0.1;
+  this->ShapeParameters[2] = 0.1;
   this->ZMax = 0.5;
   this->Center[0] = 0.0;
   this->Center[1] = 0.0;
@@ -39,7 +42,7 @@ vtkOneSheetedHyperboloidSource::vtkOneSheetedHyperboloidSource(int res)
 
   this->ThetaResolution = res;
   this->ZResolution = res;
-  this->LatLongTessellation = 0;
+  this->QuadrilateralTessellation = 0;
 
   this->SetNumberOfInputPorts(0);
 }
@@ -52,25 +55,17 @@ int vtkOneSheetedHyperboloidSource::RequestData(
   // get the info object
   vtkInformation *outInfo = outputVector->GetInformationObject(0);
 
-  // get the ouptut
+  // get the output
   vtkPolyData *output = vtkPolyData::SafeDownCast(
     outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
-  int i, j;
-  int jStart, jEnd, numOffset;
-  int numPts, numPolys;
-  vtkPoints *newPoints;
-  vtkFloatArray *newNormals;
-  vtkCellArray *newPolys;
-  double x[3], n[3], deltaPhi, deltaTheta, phi, theta, radius, norm;
-  double startTheta, endTheta, startPhi, endPhi;
-  int base, numPoles=0, thetaResolution, phiResolution;
-  vtkIdType pts[4];
-  int piece =
+  // streaming pieces
+  const int piece =
     outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_PIECE_NUMBER());
   int numPieces =
     outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_PIECES());
 
+  // We will stream over the theta angle.
   if (numPieces > this->ThetaResolution)
     {
     numPieces = this->ThetaResolution;
@@ -86,165 +81,91 @@ int vtkOneSheetedHyperboloidSource::RequestData(
   // so I will make local copies of them.  These might be able to be merged
   // with the other copies of them, ...
   int localThetaResolution = this->ThetaResolution;
-  double localStartTheta = this->StartTheta;
-  double localEndTheta = this->EndTheta;
-
-  while (localEndTheta < localStartTheta)
-    {
-    localEndTheta += 360.0;
-    }
-  deltaTheta = (localEndTheta - localStartTheta) / localThetaResolution;
+  double localStartTheta = 0.0;
+  double localEndTheta = 360.0;
+  double deltaTheta = (localEndTheta - localStartTheta) / localThetaResolution;
 
   // Change the ivars based on pieces.
-  int start, end;
-  start = piece * localThetaResolution / numPieces;
-  end = (piece+1) * localThetaResolution / numPieces;
+  const int start = piece * localThetaResolution / numPieces;
+  const int end = (piece+1) * localThetaResolution / numPieces;
   localEndTheta = localStartTheta + (double)(end) * deltaTheta;
   localStartTheta = localStartTheta + (double)(start) * deltaTheta;
   localThetaResolution = end - start;
 
   // Set things up; allocate memory
   //
-  vtkDebugMacro("OneSheetedHyperboloid Executing piece index " << piece
+  vtkDebugMacro("OneSheetedHyperboloidSource Executing piece index " << piece
                 << " of " << numPieces << " pieces.");
 
-  numPts = this->ZResolution * localThetaResolution + 2;
+  const int numPts = this->ZResolution * localThetaResolution;
   // creating triangles
-  numPolys = this->ZResolution * 2 * localThetaResolution;
+  const int numPolys = this->ZResolution * 2 * localThetaResolution;
 
-  newPoints = vtkPoints::New();
+  vtkPoints *newPoints = vtkPoints::New();
   newPoints->Allocate(numPts);
-  newNormals = vtkFloatArray::New();
-  newNormals->SetNumberOfComponents(3);
-  newNormals->Allocate(3*numPts);
-  newNormals->SetName("Normals");
-
-  newPolys = vtkCellArray::New();
+  vtkCellArray *newPolys = vtkCellArray::New();
   newPolys->Allocate(newPolys->EstimateSize(numPolys, 3));
 
   // Create sphere
   //
-  // Create north pole if needed
-  if ( this->StartPhi <= 0.0 )
-    {
-    x[0] = this->Center[0];
-    x[1] = this->Center[1];
-    x[2] = this->Center[2] + this->Radius;
-    newPoints->InsertPoint(numPoles,x);
-
-    x[0] = x[1] = 0.0; x[2] = 1.0;
-    newNormals->InsertTuple(numPoles,x);
-    numPoles++;
-    }
-
-  // Create south pole if needed
-  if ( this->EndPhi >= 180.0 )
-    {
-    x[0] = this->Center[0];
-    x[1] = this->Center[1];
-    x[2] = this->Center[2] - this->Radius;
-    newPoints->InsertPoint(numPoles,x);
-
-    x[0] = x[1] = 0.0; x[2] = -1.0;
-    newNormals->InsertTuple(numPoles,x);
-    numPoles++;
-    }
 
   // Check data, determine increments, and convert to radians
-  startTheta = (localStartTheta < localEndTheta ? localStartTheta : localEndTheta);
-  startTheta *= vtkMath::Pi() / 180.0;
-  endTheta = (localEndTheta > localStartTheta ? localEndTheta : localStartTheta);
-  endTheta *= vtkMath::Pi() / 180.0;
+  localStartTheta *= vtkMath::Pi() / 180.0;
+  localEndTheta *= vtkMath::Pi() / 180.0;
 
-  startPhi = (this->StartPhi < this->EndPhi ? this->StartPhi : this->EndPhi);
-  startPhi *= vtkMath::Pi() / 180.0;
-  endPhi = (this->EndPhi > this->StartPhi ? this->EndPhi : this->StartPhi);
-  endPhi *= vtkMath::Pi() / 180.0;
-
-  phiResolution = this->ZResolution - numPoles;
-  deltaPhi = (endPhi - startPhi) / (this->ZResolution - 1);
-  thetaResolution = localThetaResolution;
   if (fabs(localStartTheta - localEndTheta) < 360.0)
     {
     ++localThetaResolution;
     }
-  deltaTheta = (endTheta - startTheta) / thetaResolution;
+  deltaTheta = (localEndTheta - localStartTheta) / localThetaResolution;
 
-  jStart = (this->StartPhi <= 0.0 ? 1 : 0);
-  jEnd = (this->EndPhi >= 180.0 ? this->ZResolution - 1
-        : this->ZResolution);
+  // We calculate the values with the parametric representation:
+  // x(u, v) = a cosh(v) cos(u)
+  // y(u, v) = b cosh(v) sin(u)
+  // z(u, v) = c sinh(v)
+  // the parameter u here is theta
+  const double vStart = asinh(-this->ZMax / this->ShapeParameters[2]);
+  const double vEnd = asinh(this->ZMax / this->ShapeParameters[2]);
+  const double deltaV = (vEnd - vStart) / (this->ZResolution - 1);
 
   this->UpdateProgress(0.1);
 
   // Create intermediate points
-  for (i=0; i < localThetaResolution; i++)
+  double theta = localStartTheta;
+  double location[3];
+  for (int ii = 0; ii < localThetaResolution; ++ii)
     {
-    theta = localStartTheta * vtkMath::Pi() / 180.0 + i*deltaTheta;
-
-    for (j=jStart; j<jEnd; j++)
+    double vParam = vStart;
+    for (int jj = 0; jj < this->ZResolution - 1; ++jj)
       {
-      phi = startPhi + j*deltaPhi;
-      radius = this->Radius * sin((double)phi);
-      n[0] = radius * cos((double)theta);
-      n[1] = radius * sin((double)theta);
-      n[2] = this->Radius * cos((double)phi);
-      x[0] = n[0] + this->Center[0];
-      x[1] = n[1] + this->Center[1];
-      x[2] = n[2] + this->Center[2];
-      newPoints->InsertNextPoint(x);
-
-      if ( (norm = vtkMath::Norm(n)) == 0.0 )
-        {
-        norm = 1.0;
-        }
-      n[0] /= norm; n[1] /= norm; n[2] /= norm;
-      newNormals->InsertNextTuple(n);
+      location[0] = this->ShapeParameters[0] * cosh(vParam) * cos(theta);
+      location[1] = this->ShapeParameters[1] * cosh(vParam) * sin(theta);
+      location[2] = this->ShapeParameters[2] * sinh(vParam);
+      newPoints->InsertNextPoint(location);
+      vParam += deltaV;
       }
-    this->UpdateProgress (0.10 + 0.50*i/static_cast<float>(localThetaResolution));
+    theta += deltaTheta;
+    this->UpdateProgress (0.10 + 0.50*ii / static_cast< double >(localThetaResolution));
     }
 
   // Generate mesh connectivity
-  base = phiResolution * localThetaResolution;
+  const int base = this->ZResolution * localThetaResolution;
 
   if (fabs(localStartTheta - localEndTheta) < 360.0)
     {
     --localThetaResolution;
     }
 
-  if ( this->StartPhi <= 0.0 )  // around north pole
-    {
-    for (i=0; i < localThetaResolution; i++)
-      {
-      pts[0] = phiResolution*i + numPoles;
-      pts[1] = (phiResolution*(i+1) % base) + numPoles;
-      pts[2] = 0;
-      newPolys->InsertNextCell(3, pts);
-      }
-    }
-
-  if ( this->EndPhi >= 180.0 ) // around south pole
-    {
-    numOffset = phiResolution - 1 + numPoles;
-
-    for (i=0; i < localThetaResolution; i++)
-      {
-      pts[0] = phiResolution*i + numOffset;
-      pts[2] = ((phiResolution*(i+1)) % base) + numOffset;
-      pts[1] = numPoles - 1;
-      newPolys->InsertNextCell(3, pts);
-      }
-    }
-  this->UpdateProgress (0.70);
-
+  vtkIdType pts[4];
   // bands in-between poles
-  for (i=0; i < localThetaResolution; i++)
+  for (int ii = 0; ii < localThetaResolution; ++ii)
     {
-    for (j=0; j < (phiResolution-1); j++)
+    for (int jj = 0; jj < this->ZResolution - 1; ++jj)
       {
-      pts[0] = phiResolution*i + j + numPoles;
+      pts[0] = this->ZResolution*ii + jj;
       pts[1] = pts[0] + 1;
-      pts[2] = ((phiResolution*(i+1)+j) % base) + numPoles + 1;
-      if ( !this->LatLongTessellation )
+      pts[2] = ((this->ZResolution*(ii + 1) + jj) % base) + 1;
+      if ( !this->QuadrilateralTessellation )
         {
         newPolys->InsertNextCell(3, pts);
         pts[1] = pts[2];
@@ -257,7 +178,7 @@ int vtkOneSheetedHyperboloidSource::RequestData(
         newPolys->InsertNextCell(4, pts);
         }
       }
-    this->UpdateProgress (0.70 + 0.30*i/static_cast<double>(localThetaResolution));
+    this->UpdateProgress (0.70 + 0.30*ii/static_cast<double>(localThetaResolution));
     }
 
   // Update ourselves and release memeory
@@ -265,10 +186,6 @@ int vtkOneSheetedHyperboloidSource::RequestData(
   newPoints->Squeeze();
   output->SetPoints(newPoints);
   newPoints->Delete();
-
-  newNormals->Squeeze();
-  output->GetPointData()->SetNormals(newNormals);
-  newNormals->Delete();
 
   newPolys->Squeeze();
   output->SetPolys(newPolys);
@@ -284,11 +201,13 @@ void vtkOneSheetedHyperboloidSource::PrintSelf(ostream& os, vtkIndent indent)
 
   os << indent << "Theta Resolution: " << this->ThetaResolution << "\n";
   os << indent << "Z Resolution: " << this->ZResolution << "\n";
+  os << indent << "ShapeParameters: (" << this->ShapeParameters[0] << ", "
+     << this->ShapeParameters[1] << ", " << this->ShapeParameters[2] << ")\n";
   os << indent << "ZMax: " << this->ZMax << "\n";
   os << indent << "Center: (" << this->Center[0] << ", "
      << this->Center[1] << ", " << this->Center[2] << ")\n";
   os << indent
-     << "LatLong Tessellation: " << this->LatLongTessellation << "\n";
+     << "Quadrilateral Tessellation: " << this->QuadrilateralTessellation << "\n";
 }
 
 //----------------------------------------------------------------------------
@@ -303,13 +222,16 @@ int vtkOneSheetedHyperboloidSource::RequestInformation(
   outInfo->Set(vtkStreamingDemandDrivenPipeline::MAXIMUM_NUMBER_OF_PIECES(),
                -1);
 
+  const double zTerm = 1.0 + this->ZMax * this->ZMax / (this->ShapeParameters[2] * this->ShapeParameters[2]);
+  const double xMax = sqrt(this->ShapeParameters[0] * this->ShapeParameters[0] * zTerm);
+  const double yMax = sqrt(this->ShapeParameters[1] * this->ShapeParameters[1] * zTerm);
   outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_BOUNDING_BOX(),
-               this->Center[0] - this->Radius,
-               this->Center[0] + this->Radius,
-               this->Center[1] - this->Radius,
-               this->Center[1] + this->Radius,
-               this->Center[2] - this->Radius,
-               this->Center[2] + this->Radius);
+               this->Center[0] - xMax,
+               this->Center[0] + xMax,
+               this->Center[1] - yMax,
+               this->Center[1] + yMax,
+               this->Center[2] - this->ZMax,
+               this->Center[2] + this->ZMax);
 
   return 1;
 }

@@ -19,7 +19,8 @@
 // \f[
 //    \frac{x^2}{a^2} + \frac{y^2}{b^2} - \frac{z^2}{c^2} = 1
 // \f]
-// where \b a, \b b, and \b c parameterize its shape.  The representation is
+// where \b a, \b b, and \b c parameterize its shape.  These parameters are
+// specified with the SetShapeParameters method. The representation is
 // truncated at +/- \b ZMax.
 // The resolution (polygonal discretization)
 // in both the theta and z directions can be specified.
@@ -28,7 +29,9 @@
 // produce a tessellation using quadrilaterals.
 // .SECTION Caveats
 // A hyperboloid is not a closed surface, and this polygonal representation only
-// covers the extent surrounding the origin.
+// covers the extent surrounding the origin.  This vtkPolyDataAlgorithm does not
+// compute the normals for the polygons.  If they are needed, the
+// vtkPolyDataNormals algorithm is a possibility.
 
 #ifndef __vtkOneSheetedHyperboloidSource_h
 #define __vtkOneSheetedHyperboloidSource_h
@@ -44,7 +47,8 @@ public:
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
-  // Construct one-sheeted hyperboloid with z_max=0.5 and shape parameters (a, b, and c) = 0.1.
+  // Construct one-sheeted hyperboloid with z_max=0.5 and 
+  // shape parameters (a, b, and c) = 0.1.
   // Default resolution is 8 in both theta and z directions.  Theta ranges from
   // (0, 360) and z from (-z_max, z_max).
   static vtkOneSheetedHyperboloidSource *New();
@@ -54,6 +58,14 @@ public:
   // z_max.  Default is .5.
   vtkSetClampMacro(ZMax,double,0.0,VTK_DOUBLE_MAX);
   vtkGetMacro(ZMax,double);
+
+  // Description:
+  // Set the shape parameters for the hyperboloid  If
+  // \$\frac{x^2}{a^2} + \frac{y^2}{b^2} - \frac{z^2}{c^2} = 1\$f is the equation of
+  // the hyperboloid, then ShapeParameters[0] = a, ShapeParameters[1] = b, nad
+  // ShapeParameters[2] = c.  Default is 0.1,0.1,0.1.
+  vtkSetVector3Macro(ShapeParameters,double);
+  vtkGetVectorMacro(ShapeParameters,double,3);
 
   // Description:
   // Set the center of the sphere. Default is 0,0,0.
@@ -78,9 +90,9 @@ public:
   // longitude lines. If on, quadrilaterals are generated everywhere
   // except at the poles. This can be useful for generating a wireframe
   // sphere with natural latitude and longitude lines.
-  vtkSetMacro(LatLongTessellation,int);
-  vtkGetMacro(LatLongTessellation,int);
-  vtkBooleanMacro(LatLongTessellation,int);
+  vtkSetMacro(QuadrilateralTessellation,int);
+  vtkGetMacro(QuadrilateralTessellation,int);
+  vtkBooleanMacro(QuadrilateralTessellation,int);
 
 protected:
   vtkOneSheetedHyperboloidSource(int res=8);
@@ -90,10 +102,11 @@ protected:
   int RequestInformation(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
 
   double ZMax;
+  double ShapeParameters[3];
   double Center[3];
   int ThetaResolution;
   int ZResolution;
-  int LatLongTessellation;
+  int QuadrilateralTessellation;
 
 private:
   vtkOneSheetedHyperboloidSource(const vtkOneSheetedHyperboloidSource&);  // Not implemented.

@@ -11,8 +11,8 @@
 int main( int argc, char * argv[] )
 {
   vtkSmartPointer< vtkSphereSource > sphere = vtkSmartPointer< vtkSphereSource >::New();
-  sphere->SetThetaResolution( 50 );
-  sphere->SetPhiResolution( 50 );
+  //sphere->SetThetaResolution( 50 );
+  //sphere->SetPhiResolution( 50 );
 
   vtkSmartPointer< vtkPolyDataMapper > mapper = vtkSmartPointer< vtkPolyDataMapper >::New();
   mapper->SetInputConnection( sphere->GetOutputPort() );

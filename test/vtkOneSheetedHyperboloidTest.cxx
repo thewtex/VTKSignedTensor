@@ -3,6 +3,7 @@
 #include "vtkProperty.h"
 #include "vtkSmartPointer.h"
 #include "vtkOneSheetedHyperboloidSource.h"
+#include "vtkOutlineFilter.h"
 #include "vtkRenderWindow.h"
 #include "vtkRenderer.h"
 #include "vtkRenderWindowInteractor.h"
@@ -22,8 +23,16 @@ int main( int argc, char * argv[] )
   vtkProperty * property = actor->GetProperty();
   property->SetColor( 0.1, 0.7, 0.9 );
 
+  vtkSmartPointer< vtkOutlineFilter > outline = vtkSmartPointer< vtkOutlineFilter >::New();
+  outline->SetInputConnection( hyperboloid->GetOutputPort() );
+  vtkSmartPointer< vtkPolyDataMapper > outlineMapper = vtkSmartPointer< vtkPolyDataMapper >::New();
+  outlineMapper->SetInputConnection( outline->GetOutputPort() );
+  vtkSmartPointer< vtkActor > outlineActor = vtkSmartPointer< vtkActor >::New();
+  outlineActor->SetMapper( outlineMapper );
+
   vtkSmartPointer< vtkRenderer > renderer = vtkSmartPointer< vtkRenderer >::New();
   renderer->AddActor( actor );
+  renderer->AddActor( outlineActor );
   renderer->SetBackground( 0.1, 0.1, 0.1 );
 
   vtkSmartPointer< vtkRenderWindow > renderWindow = vtkSmartPointer< vtkRenderWindow >::New();
