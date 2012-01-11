@@ -217,15 +217,15 @@ int vtkTwoSheetedHyperboloidSource::RequestData(
     }
 
   // Around south sheet vertex
-  //const int southSheetOffset = numberOfSheetVertices + base;
-  //for (int ii = 0; ii < localThetaResolution; ++ii)
-    //{
-    //pts[0] = zResolution/2*ii + southSheetOffset;
-    //pts[2] = ((zResolution/2*(ii+1)) % base) + southSheetOffset;
-    //pts[1] = 1;
-    //newPolys->InsertNextCell(3, pts);
-    //}
-  //this->UpdateProgress (0.70);
+  const int southSheetOffset = numberOfSheetVertices + base;
+  for (int ii = 0; ii < localThetaResolution; ++ii)
+    {
+    pts[0] = nonVertexSheetZResolution*ii + southSheetOffset;
+    pts[2] = ((nonVertexSheetZResolution*(ii+1)) % base) + southSheetOffset;
+    pts[1] = 1;
+    newPolys->InsertNextCell(3, pts);
+    }
+  this->UpdateProgress (0.70);
 
   // bands in-between poles
   // north sheet
