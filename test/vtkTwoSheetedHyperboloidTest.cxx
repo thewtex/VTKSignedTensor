@@ -13,8 +13,8 @@
 int main( int argc, char * argv[] )
 {
   vtkSmartPointer< vtkTwoSheetedHyperboloidSource > hyperboloid = vtkSmartPointer< vtkTwoSheetedHyperboloidSource >::New();
-  hyperboloid->SetThetaResolution( 90 );
-  hyperboloid->SetZResolution( 50 );
+  //hyperboloid->SetThetaResolution( 90 );
+  //hyperboloid->SetZResolution( 50 );
 
   vtkSmartPointer< vtkMassProperties > massProp = vtkSmartPointer< vtkMassProperties >::New();
   massProp->SetInputConnection( hyperboloid->GetOutputPort() );

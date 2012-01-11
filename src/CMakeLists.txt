@@ -1,1 +1,2 @@
-add_library( vtkSignedTensor vtkOneSheetedHyperboloidSource.cxx )
+add_library( vtkSignedTensor vtkOneSheetedHyperboloidSource.cxx
+  vtkTwoSheetedHyperboloidSource.cxx )

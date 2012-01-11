@@ -10,6 +10,10 @@ add_executable( vtk-one-sheeted-hyperboloid vtkOneSheetedHyperboloidTest.cxx )
 target_link_libraries( vtk-one-sheeted-hyperboloid ${VTK_LIBRARIES} vtkSignedTensor )
 add_test( vtkOneSheetedHyperboloidTest vtk-one-sheeted-hyperboloid )
 
+add_executable( vtk-two-sheeted-hyperboloid vtkTwoSheetedHyperboloidTest.cxx )
+target_link_libraries( vtk-two-sheeted-hyperboloid ${VTK_LIBRARIES} vtkSignedTensor )
+add_test( vtkTwoSheetedHyperboloidTest vtk-two-sheeted-hyperboloid )
+
 add_test( GenerateStrainFlavors ${CMAKE_CURRENT_SOURCE_DIR}/generate_strain_flavors.py )
 
 set_tests_properties( vtkTensorGlyphTest PROPERTIES DEPENDS GenerateStrainFlavors )

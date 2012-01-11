@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    vtkOneSheetedHyperboloidSource.h
+  Module:    vtkTwoSheetedHyperboloidSource.h
 
   Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
@@ -12,12 +12,12 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-// .NAME vtkOneSheetedHyperboloidSource - create a polygonal one-sheeted hyperboloid centered at the origin
+// .NAME vtkTwoSheetedHyperboloidSource - create a polygonal two-sheeted hyperboloid centered at the origin
 // .SECTION Description
-// vtkOneSheetedHyperboloidSource creates a one-sheeted hyperboloid (represented by polygons) orientated along
+// vtkTwoSheetedHyperboloidSource creates a two-sheeted hyperboloid (represented by polygons) orientated along
 // the z-axis and centered at the origin. The hyperboloid is a representation of the equation
 // \f[
-//    \frac{x^2}{a^2} + \frac{y^2}{b^2} - \frac{z^2}{c^2} = 1
+//    \frac{x^2}{a^2} - \frac{y^2}{b^2} - \frac{z^2}{c^2} = 1
 // \f]
 // where \b a, \b b, and \b c parameterize its shape.  These parameters are
 // specified with the SetShapeParameters method. The representation is
@@ -33,25 +33,25 @@
 // compute the normals for the polygons.  If they are needed, the
 // vtkPolyDataNormals algorithm is a possibility.
 
-#ifndef __vtkOneSheetedHyperboloidSource_h
-#define __vtkOneSheetedHyperboloidSource_h
+#ifndef __vtkTwoSheetedHyperboloidSource_h
+#define __vtkTwoSheetedHyperboloidSource_h
 
 #include "vtkPolyDataAlgorithm.h"
 
-#define VTK_MAX_ONE_SHEETED_HYPERBOLOID_RESOLUTION 1024
+#define VTK_MAX_TWO_SHEETED_HYPERBOLOID_RESOLUTION 1024
 
-class VTK_GRAPHICS_EXPORT vtkOneSheetedHyperboloidSource : public vtkPolyDataAlgorithm
+class VTK_GRAPHICS_EXPORT vtkTwoSheetedHyperboloidSource : public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeMacro(vtkOneSheetedHyperboloidSource,vtkPolyDataAlgorithm);
+  vtkTypeMacro(vtkTwoSheetedHyperboloidSource,vtkPolyDataAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
-  // Construct one-sheeted hyperboloid with z_max=0.5 and
+  // Construct two-sheeted hyperboloid with z_max=0.5 and
   // shape parameters (a, b, and c) = 0.1.
   // Default resolution is 8 in both theta and z directions.  Theta ranges from
   // (0, 360) and z from (-z_max, z_max).
-  static vtkOneSheetedHyperboloidSource *New();
+  static vtkTwoSheetedHyperboloidSource *New();
 
   // Description:
   // Set z_max of the hyperboloid.  The hyperboloid extends from -z_max to
@@ -61,7 +61,7 @@ public:
 
   // Description:
   // Set the shape parameters for the hyperboloid  If
-  // \$\frac{x^2}{a^2} + \frac{y^2}{b^2} - \frac{z^2}{c^2} = 1\$f is the equation of
+  // \$\frac{x^2}{a^2} - \frac{y^2}{b^2} - \frac{z^2}{c^2} = 1\$f is the equation of
   // the hyperboloid, then ShapeParameters[0] = a, ShapeParameters[1] = b, nad
   // ShapeParameters[2] = c.  Default is 0.32126,0.32126,0.32126 such that with
   // a z_max of 0.5, the surface area approximately equals the surface area of a
@@ -76,13 +76,13 @@ public:
 
   // Description:
   // Set the number of points in the rotational direction.
-  vtkSetClampMacro(ThetaResolution,int,3,VTK_MAX_ONE_SHEETED_HYPERBOLOID_RESOLUTION);
+  vtkSetClampMacro(ThetaResolution,int,3,VTK_MAX_TWO_SHEETED_HYPERBOLOID_RESOLUTION);
   vtkGetMacro(ThetaResolution,int);
 
   // Description:
   // Set the number of points in the Z direction (ranging
   // from -ZMax to ZMax).
-  vtkSetClampMacro(ZResolution,int,3,VTK_MAX_ONE_SHEETED_HYPERBOLOID_RESOLUTION);
+  vtkSetClampMacro(ZResolution,int,3,VTK_MAX_TWO_SHEETED_HYPERBOLOID_RESOLUTION);
   vtkGetMacro(ZResolution,int);
 
   // Description:
@@ -97,8 +97,8 @@ public:
   vtkBooleanMacro(QuadrilateralTessellation,int);
 
 protected:
-  vtkOneSheetedHyperboloidSource(int res=8);
-  ~vtkOneSheetedHyperboloidSource() {}
+  vtkTwoSheetedHyperboloidSource(int res=8);
+  ~vtkTwoSheetedHyperboloidSource() {}
 
   int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
   int RequestInformation(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
@@ -111,8 +111,8 @@ protected:
   int QuadrilateralTessellation;
 
 private:
-  vtkOneSheetedHyperboloidSource(const vtkOneSheetedHyperboloidSource&);  // Not implemented.
-  void operator=(const vtkOneSheetedHyperboloidSource&);  // Not implemented.
+  vtkTwoSheetedHyperboloidSource(const vtkTwoSheetedHyperboloidSource&);  // Not implemented.
+  void operator=(const vtkTwoSheetedHyperboloidSource&);  // Not implemented.
 };
 
 #endif
