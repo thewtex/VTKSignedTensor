@@ -63,7 +63,9 @@ public:
   // Set the shape parameters for the hyperboloid  If
   // \$\frac{x^2}{a^2} + \frac{y^2}{b^2} - \frac{z^2}{c^2} = 1\$f is the equation of
   // the hyperboloid, then ShapeParameters[0] = a, ShapeParameters[1] = b, nad
-  // ShapeParameters[2] = c.  Default is 0.1,0.1,0.1.
+  // ShapeParameters[2] = c.  Default is 0.32126,0.32126,0.32126 such that with
+  // a z_max of 0.5, the surface area approximately equals the surface area of a
+  // sphere with radius 0.5.
   vtkSetVector3Macro(ShapeParameters,double);
   vtkGetVectorMacro(ShapeParameters,double,3);
 

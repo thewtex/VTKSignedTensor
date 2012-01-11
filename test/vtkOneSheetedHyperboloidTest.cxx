@@ -1,4 +1,5 @@
 #include "vtkActor.h"
+#include "vtkMassProperties.h"
 #include "vtkPolyDataMapper.h"
 #include "vtkProperty.h"
 #include "vtkSmartPointer.h"
@@ -12,8 +13,13 @@
 int main( int argc, char * argv[] )
 {
   vtkSmartPointer< vtkOneSheetedHyperboloidSource > hyperboloid = vtkSmartPointer< vtkOneSheetedHyperboloidSource >::New();
-  //hyperboloid->SetThetaResolution( 50 );
-  //hyperboloid->SetZResolution( 50 );
+  hyperboloid->SetThetaResolution( 90 );
+  hyperboloid->SetZResolution( 50 );
+
+  vtkSmartPointer< vtkMassProperties > massProp = vtkSmartPointer< vtkMassProperties >::New();
+  massProp->SetInputConnection( hyperboloid->GetOutputPort() );
+  massProp->Update();
+  std::cout << "The hyperboloid's surface area is: " << massProp->GetSurfaceArea() << std::endl;
 
   vtkSmartPointer< vtkPolyDataMapper > mapper = vtkSmartPointer< vtkPolyDataMapper >::New();
   mapper->SetInputConnection( hyperboloid->GetOutputPort() );

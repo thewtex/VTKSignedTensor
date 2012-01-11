@@ -1,4 +1,5 @@
 #include "vtkActor.h"
+#include "vtkMassProperties.h"
 #include "vtkPolyDataMapper.h"
 #include "vtkProperty.h"
 #include "vtkSmartPointer.h"
@@ -11,8 +12,13 @@
 int main( int argc, char * argv[] )
 {
   vtkSmartPointer< vtkSphereSource > sphere = vtkSmartPointer< vtkSphereSource >::New();
-  //sphere->SetThetaResolution( 50 );
-  //sphere->SetPhiResolution( 50 );
+  sphere->SetThetaResolution( 50 );
+  sphere->SetPhiResolution( 50 );
+
+  vtkSmartPointer< vtkMassProperties > massProp = vtkSmartPointer< vtkMassProperties >::New();
+  massProp->SetInputConnection( sphere->GetOutputPort() );
+  massProp->Update();
+  std::cout << "The sphere's surface area is: " << massProp->GetSurfaceArea() << std::endl;
 
   vtkSmartPointer< vtkPolyDataMapper > mapper = vtkSmartPointer< vtkPolyDataMapper >::New();
   mapper->SetInputConnection( sphere->GetOutputPort() );
@@ -34,6 +40,7 @@ int main( int argc, char * argv[] )
   renderWindowInteractor->SetRenderWindow( renderWindow );
 
   renderWindowInteractor->Start();
-  
+
+
   return 0;
 }

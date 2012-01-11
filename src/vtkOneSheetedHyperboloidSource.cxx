@@ -32,9 +32,9 @@ vtkStandardNewMacro(vtkOneSheetedHyperboloidSource);
 vtkOneSheetedHyperboloidSource::vtkOneSheetedHyperboloidSource(int res)
 {
   res = res < 4 ? 4 : res;
-  this->ShapeParameters[0] = 0.623853084060358207433;
-  this->ShapeParameters[1] = 0.623853084060358207433;
-  this->ShapeParameters[2] = 0.623853084060358207433;
+  this->ShapeParameters[0] = 0.32126;
+  this->ShapeParameters[1] = 0.32126;
+  this->ShapeParameters[2] = 0.32126;
   this->ZMax = 0.5;
   this->Center[0] = 0.0;
   this->Center[1] = 0.0;
