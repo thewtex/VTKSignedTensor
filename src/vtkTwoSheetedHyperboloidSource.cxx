@@ -32,9 +32,9 @@ vtkStandardNewMacro(vtkTwoSheetedHyperboloidSource);
 vtkTwoSheetedHyperboloidSource::vtkTwoSheetedHyperboloidSource(int res)
 {
   res = res < 4 ? 4 : res;
-  this->ShapeParameters[0] = 0.32126;
-  this->ShapeParameters[1] = 0.32126;
-  this->ShapeParameters[2] = 0.32126;
+  this->ShapeParameters[0] = 0.1;
+  this->ShapeParameters[1] = 0.1;
+  this->ShapeParameters[2] = 0.1;
   this->ZMax = 0.5;
   this->Center[0] = 0.0;
   this->Center[1] = 0.0;
@@ -135,9 +135,6 @@ int vtkTwoSheetedHyperboloidSource::RequestData(
   const double vEnd = acosh(this->ZMax / this->ShapeParameters[2]);
   const double vStart = this->ShapeParameters[2];
   const double deltaV = (vEnd - vStart) / (zResolution/2 - 1);
-  std::cout << "vStart: " << vStart << std::endl;
-  std::cout << "vEnd: " << vEnd << std::endl;
-  std::cout << "deltaV: " << deltaV << std::endl;
 
   double location[3];
   //
@@ -146,31 +143,26 @@ int vtkTwoSheetedHyperboloidSource::RequestData(
   location[1] = this->Center[1];
   location[2] = this->Center[2] + this->ShapeParameters[2];
   newPoints->InsertPoint(0, location);
-  std::cout << "north vertex: " << location[0] << " " << location[1] << " " << location[2] << std::endl;
 
   // Create south vertex
   location[0] = this->Center[0];
   location[1] = this->Center[1];
   location[2] = this->Center[2] - this->ShapeParameters[2];
   newPoints->InsertPoint(1 ,location);
-  std::cout << "south vertex: " << location[0] << " " << location[1] << " " << location[2] << std::endl;
 
   this->UpdateProgress(0.1);
 
   // Create intermediate points
   // north sheet
-  std::cout << "NORTH sheet" << std::endl;
   double theta = localStartTheta;
   for (int ii = 0; ii < localThetaResolution; ++ii)
     {
-    std::cout << "theta: " << theta << std::endl;
     double vParam = vStart + deltaV;
     for (int jj = 0; jj < zResolution/2 - 1; ++jj)
       {
       location[0] = this->ShapeParameters[0] * sinh(vParam) * cos(theta) + this->Center[0];
       location[1] = this->ShapeParameters[1] * sinh(vParam) * sin(theta) + this->Center[1];
       location[2] = this->ShapeParameters[2] * cosh(vParam) + this->Center[2];
-      std::cout << "north point: " << location[0] << " " << location[1] << " " << location[2] << std::endl;
       newPoints->InsertNextPoint(location);
       vParam += deltaV;
       }
@@ -178,18 +170,15 @@ int vtkTwoSheetedHyperboloidSource::RequestData(
     this->UpdateProgress (0.10 + 0.25*ii / static_cast< double >(localThetaResolution));
     }
   // south sheet
-  std::cout << "SOUTH sheet" << std::endl;
   theta = localStartTheta;
   for (int ii = 0; ii < localThetaResolution; ++ii)
     {
-    std::cout << "theta: " << theta << std::endl;
     double vParam = vStart + deltaV;
     for (int jj = 0; jj < zResolution/2 - 1; ++jj)
       {
       location[0] = this->ShapeParameters[0] * sinh(vParam) * cos(theta) + this->Center[0];
       location[1] = this->ShapeParameters[1] * sinh(vParam) * sin(theta) + this->Center[1];
       location[2] = - this->ShapeParameters[2] * cosh(vParam) + this->Center[2];
-      std::cout << "south point: " << location[0] << " " << location[1] << " " << location[2] << std::endl;
       newPoints->InsertNextPoint(location);
       vParam += deltaV;
       }
@@ -227,52 +216,53 @@ int vtkTwoSheetedHyperboloidSource::RequestData(
     }
   this->UpdateProgress (0.70);
 
-  // bands in-between poles
+  // bands off sheet verticies
   // north sheet
-  //for (int ii = 0; ii < localThetaResolution; ++ii)
-    //{
-    //for (int jj = 0; jj < zResolution/2 - 1; ++jj)
-      //{
-      //pts[0] = zResolution/2*ii + jj + numberOfSheetVertices;
-      //pts[1] = pts[0] + 1;
-      //pts[2] = ((zResolution/2*(ii + 1) + jj) % base) + numberOfSheetVertices + 1;
-      //if ( !this->QuadrilateralTessellation )
-        //{
-        //newPolys->InsertNextCell(3, pts);
-        //pts[1] = pts[2];
-        //pts[2] = pts[1] - 1;
-        //newPolys->InsertNextCell(3, pts);
-        //}
-      //else
-        //{
-        //pts[3] = pts[2] - 1;
-        //newPolys->InsertNextCell(4, pts);
-        //}
-      //}
-    //this->UpdateProgress (0.70 + 0.15*ii/static_cast<double>(localThetaResolution));
-    //}
-  //for (int ii = 0; ii < localThetaResolution; ++ii)
-    //{
-    //for (int jj = 0; jj < zResolution/2 - 1; ++jj)
-      //{
-      //pts[0] = zResolution/2*ii + jj + southSheetOffset;
-      //pts[1] = pts[0] + 1;
-      //pts[2] = ((zResolution/2*(ii + 1) + jj) % base) + southSheetOffset + 1;
-      //if ( !this->QuadrilateralTessellation )
-        //{
-        //newPolys->InsertNextCell(3, pts);
-        //pts[1] = pts[2];
-        //pts[2] = pts[1] - 1;
-        //newPolys->InsertNextCell(3, pts);
-        //}
-      //else
-        //{
-        //pts[3] = pts[2] - 1;
-        //newPolys->InsertNextCell(4, pts);
-        //}
-      //}
-    //this->UpdateProgress (0.70 + 0.30*ii/static_cast<double>(localThetaResolution));
-    //}
+  for (int ii = 0; ii < localThetaResolution; ++ii)
+    {
+    for (int jj = 0; jj < nonVertexSheetZResolution - 1; ++jj)
+      {
+      pts[0] = nonVertexSheetZResolution*ii + jj + numberOfSheetVertices;
+      pts[1] = pts[0] + 1;
+      pts[2] = ((nonVertexSheetZResolution*(ii + 1) + jj) % base) + numberOfSheetVertices + 1;
+      if ( !this->QuadrilateralTessellation )
+        {
+        newPolys->InsertNextCell(3, pts);
+        pts[1] = pts[2];
+        pts[2] = pts[1] - 1;
+        newPolys->InsertNextCell(3, pts);
+        }
+      else
+        {
+        pts[3] = pts[2] - 1;
+        newPolys->InsertNextCell(4, pts);
+        }
+      }
+    this->UpdateProgress (0.70 + 0.15*ii/static_cast<double>(localThetaResolution));
+    }
+  // south sheet
+  for (int ii = 0; ii < localThetaResolution; ++ii)
+    {
+    for (int jj = 0; jj < nonVertexSheetZResolution - 1; ++jj)
+      {
+      pts[0] = nonVertexSheetZResolution*ii + jj + southSheetOffset;
+      pts[1] = pts[0] + 1;
+      pts[2] = ((nonVertexSheetZResolution*(ii + 1) + jj) % base) + southSheetOffset + 1;
+      if ( !this->QuadrilateralTessellation )
+        {
+        newPolys->InsertNextCell(3, pts);
+        pts[1] = pts[2];
+        pts[2] = pts[1] - 1;
+        newPolys->InsertNextCell(3, pts);
+        }
+      else
+        {
+        pts[3] = pts[2] - 1;
+        newPolys->InsertNextCell(4, pts);
+        }
+      }
+    this->UpdateProgress (0.70 + 0.30*ii/static_cast<double>(localThetaResolution));
+    }
 
   // Update ourselves and release memeory
   //

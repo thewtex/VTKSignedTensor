@@ -1,6 +1,7 @@
 #include "vtkActor.h"
 #include "vtkMassProperties.h"
 #include "vtkPolyDataMapper.h"
+#include "vtkPolyDataNormals.h"
 #include "vtkProperty.h"
 #include "vtkSmartPointer.h"
 #include "vtkTwoSheetedHyperboloidSource.h"
@@ -13,16 +14,19 @@
 int main( int argc, char * argv[] )
 {
   vtkSmartPointer< vtkTwoSheetedHyperboloidSource > hyperboloid = vtkSmartPointer< vtkTwoSheetedHyperboloidSource >::New();
-  //hyperboloid->SetThetaResolution( 90 );
-  //hyperboloid->SetZResolution( 50 );
+  hyperboloid->SetThetaResolution( 90 );
+  hyperboloid->SetZResolution( 90 );
 
   vtkSmartPointer< vtkMassProperties > massProp = vtkSmartPointer< vtkMassProperties >::New();
   massProp->SetInputConnection( hyperboloid->GetOutputPort() );
   massProp->Update();
-  std::cout << "The hyperboloid's surface area is: " << massProp->GetSurfaceArea() << std::endl;
+  std::cout << "The hyperboloid's surface area is: " << 2*massProp->GetSurfaceArea() << std::endl;
+
+  vtkSmartPointer< vtkPolyDataNormals > normals = vtkSmartPointer< vtkPolyDataNormals >::New();
+  normals->SetInputConnection( hyperboloid->GetOutputPort() );
 
   vtkSmartPointer< vtkPolyDataMapper > mapper = vtkSmartPointer< vtkPolyDataMapper >::New();
-  mapper->SetInputConnection( hyperboloid->GetOutputPort() );
+  mapper->SetInputConnection( normals->GetOutputPort() );
 
   vtkSmartPointer< vtkActor > actor = vtkSmartPointer< vtkActor >::New();
   actor->SetMapper( mapper );
