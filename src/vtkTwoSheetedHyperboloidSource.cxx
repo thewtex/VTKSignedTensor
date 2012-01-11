@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    vtkOneSheetedHyperboloidSource.cxx
+  Module:    vtkTwoSheetedHyperboloidSource.cxx
 
   Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
@@ -12,7 +12,7 @@
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-#include "vtkOneSheetedHyperboloidSource.h"
+#include "vtkTwoSheetedHyperboloidSource.h"
 
 #include "vtkCellArray.h"
 #include "vtkFloatArray.h"
@@ -27,9 +27,9 @@
 
 #include <math.h>
 
-vtkStandardNewMacro(vtkOneSheetedHyperboloidSource);
+vtkStandardNewMacro(vtkTwoSheetedHyperboloidSource);
 
-vtkOneSheetedHyperboloidSource::vtkOneSheetedHyperboloidSource(int res)
+vtkTwoSheetedHyperboloidSource::vtkTwoSheetedHyperboloidSource(int res)
 {
   res = res < 4 ? 4 : res;
   this->ShapeParameters[0] = 0.32126;
@@ -47,7 +47,7 @@ vtkOneSheetedHyperboloidSource::vtkOneSheetedHyperboloidSource(int res)
   this->SetNumberOfInputPorts(0);
 }
 
-int vtkOneSheetedHyperboloidSource::RequestData(
+int vtkTwoSheetedHyperboloidSource::RequestData(
   vtkInformation *vtkNotUsed(request),
   vtkInformationVector **vtkNotUsed(inputVector),
   vtkInformationVector *outputVector)
@@ -94,7 +94,7 @@ int vtkOneSheetedHyperboloidSource::RequestData(
 
   // Set things up; allocate memory
   //
-  vtkDebugMacro("OneSheetedHyperboloidSource Executing piece index " << piece
+  vtkDebugMacro("TwoSheetedHyperboloidSource Executing piece index " << piece
                 << " of " << numPieces << " pieces.");
 
   const int numPts = this->ZResolution * localThetaResolution;
@@ -106,7 +106,7 @@ int vtkOneSheetedHyperboloidSource::RequestData(
   vtkCellArray *newPolys = vtkCellArray::New();
   newPolys->Allocate(newPolys->EstimateSize(numPolys, 3));
 
-  // Create hyperboloid
+  // Create sphere
   //
 
   // Check data, determine increments, and convert to radians
@@ -138,9 +138,9 @@ int vtkOneSheetedHyperboloidSource::RequestData(
     double vParam = vStart;
     for (int jj = 0; jj < this->ZResolution; ++jj)
       {
-      location[0] = this->ShapeParameters[0] * cosh(vParam) * cos(theta) + this->Center[0];
-      location[1] = this->ShapeParameters[1] * cosh(vParam) * sin(theta) + this->Center[1];
-      location[2] = this->ShapeParameters[2] * sinh(vParam) + this->Center[2];
+      location[0] = this->ShapeParameters[0] * cosh(vParam) * cos(theta);
+      location[1] = this->ShapeParameters[1] * cosh(vParam) * sin(theta);
+      location[2] = this->ShapeParameters[2] * sinh(vParam);
       newPoints->InsertNextPoint(location);
       vParam += deltaV;
       }
@@ -195,7 +195,7 @@ int vtkOneSheetedHyperboloidSource::RequestData(
 }
 
 //----------------------------------------------------------------------------
-void vtkOneSheetedHyperboloidSource::PrintSelf(ostream& os, vtkIndent indent)
+void vtkTwoSheetedHyperboloidSource::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
 
@@ -211,7 +211,7 @@ void vtkOneSheetedHyperboloidSource::PrintSelf(ostream& os, vtkIndent indent)
 }
 
 //----------------------------------------------------------------------------
-int vtkOneSheetedHyperboloidSource::RequestInformation(
+int vtkTwoSheetedHyperboloidSource::RequestInformation(
   vtkInformation *vtkNotUsed(request),
   vtkInformationVector **vtkNotUsed(inputVector),
   vtkInformationVector *outputVector)
