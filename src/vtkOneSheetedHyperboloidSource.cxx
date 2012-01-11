@@ -32,9 +32,9 @@ vtkStandardNewMacro(vtkOneSheetedHyperboloidSource);
 vtkOneSheetedHyperboloidSource::vtkOneSheetedHyperboloidSource(int res)
 {
   res = res < 4 ? 4 : res;
-  this->ShapeParameters[0] = 0.1;
-  this->ShapeParameters[1] = 0.1;
-  this->ShapeParameters[2] = 0.1;
+  this->ShapeParameters[0] = 0.623853084060358207433;
+  this->ShapeParameters[1] = 0.623853084060358207433;
+  this->ShapeParameters[2] = 0.623853084060358207433;
   this->ZMax = 0.5;
   this->Center[0] = 0.0;
   this->Center[1] = 0.0;
@@ -110,13 +110,13 @@ int vtkOneSheetedHyperboloidSource::RequestData(
   //
 
   // Check data, determine increments, and convert to radians
-  localStartTheta *= vtkMath::Pi() / 180.0;
-  localEndTheta *= vtkMath::Pi() / 180.0;
 
   if (fabs(localStartTheta - localEndTheta) < 360.0)
     {
     ++localThetaResolution;
     }
+  localStartTheta *= vtkMath::Pi() / 180.0;
+  localEndTheta *= vtkMath::Pi() / 180.0;
   deltaTheta = (localEndTheta - localStartTheta) / localThetaResolution;
 
   // We calculate the values with the parametric representation:
@@ -136,7 +136,7 @@ int vtkOneSheetedHyperboloidSource::RequestData(
   for (int ii = 0; ii < localThetaResolution; ++ii)
     {
     double vParam = vStart;
-    for (int jj = 0; jj < this->ZResolution - 1; ++jj)
+    for (int jj = 0; jj < this->ZResolution; ++jj)
       {
       location[0] = this->ShapeParameters[0] * cosh(vParam) * cos(theta);
       location[1] = this->ShapeParameters[1] * cosh(vParam) * sin(theta);
@@ -151,7 +151,7 @@ int vtkOneSheetedHyperboloidSource::RequestData(
   // Generate mesh connectivity
   const int base = this->ZResolution * localThetaResolution;
 
-  if (fabs(localStartTheta - localEndTheta) < 360.0)
+  if (fabs(localStartTheta - localEndTheta) < 2.0 * vtkMath::Pi())
     {
     --localThetaResolution;
     }

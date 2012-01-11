@@ -47,7 +47,7 @@ public:
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
-  // Construct one-sheeted hyperboloid with z_max=0.5 and 
+  // Construct one-sheeted hyperboloid with z_max=0.5 and
   // shape parameters (a, b, and c) = 0.1.
   // Default resolution is 8 in both theta and z directions.  Theta ranges from
   // (0, 360) and z from (-z_max, z_max).
