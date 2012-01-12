@@ -1,6 +1,7 @@
 #include "vtkActor.h"
 #include "vtkArrowSource.h"
 #include "vtkAxesActor.h"
+#include "vtkCamera.h"
 #include "vtkCubeSource.h"
 #include "vtkOneSheetedHyperboloidSource.h"
 #include "vtkOutlineFilter.h"
@@ -21,7 +22,9 @@
 
 #include <iostream>
 
-void createGlyphs( const char * filename, vtkSmartPointer< vtkPolyData > & signedGlyphs )
+void createGlyphs( const char * filename,
+  vtkSmartPointer< vtkPolyData > & signedGlyphs,
+  vtkSmartPointer< vtkPolyData > & glyphs )
 {
   vtkSmartPointer< vtkStructuredPointsReader > reader = vtkSmartPointer< vtkStructuredPointsReader >::New();
   reader->SetFileName( filename );
@@ -51,11 +54,27 @@ void createGlyphs( const char * filename, vtkSmartPointer< vtkPolyData > & signe
 
   const double glyphScale = 15.0;
 
-  vtkSmartPointer< vtkSignedEigenvalueTensorGlyph > tensorGlyph = vtkSmartPointer< vtkSignedEigenvalueTensorGlyph >::New();
-  tensorGlyph->SetInputConnection(1, sphere->GetOutputPort() );
-  tensorGlyph->SetInputConnection(2, oneSheetedHyperboloidWithNormals->GetOutputPort() );
-  tensorGlyph->SetInputConnection(3, twoSheetedHyperboloidWithNormals->GetOutputPort() );
-  tensorGlyph->SetInputConnection(4, cube->GetOutputPort() );
+  vtkSmartPointer< vtkSignedEigenvalueTensorGlyph > signedTensorGlyph = vtkSmartPointer< vtkSignedEigenvalueTensorGlyph >::New();
+  signedTensorGlyph->SetInputConnection(1, sphere->GetOutputPort() );
+  signedTensorGlyph->SetInputConnection(2, oneSheetedHyperboloidWithNormals->GetOutputPort() );
+  signedTensorGlyph->SetInputConnection(3, twoSheetedHyperboloidWithNormals->GetOutputPort() );
+  signedTensorGlyph->SetInputConnection(4, cube->GetOutputPort() );
+  signedTensorGlyph->SetInputConnection( reader->GetOutputPort() );
+  signedTensorGlyph->SetColorModeToEigenvalues();
+  signedTensorGlyph->SetExtractEigenvalues( true );
+  signedTensorGlyph->SetScaleFactor( glyphScale );
+  signedTensorGlyph->SetScaling( true );
+
+  // this is needed to prevent some of the glyphs going black.
+  // taken from Graphics/Testing/Python/TestTensorGlyph.py
+  vtkSmartPointer< vtkPolyDataNormals > signedNormals = vtkSmartPointer< vtkPolyDataNormals >::New();
+  signedNormals->SetInputConnection( signedTensorGlyph->GetOutputPort() );
+  signedNormals->Update();
+
+  signedGlyphs = signedNormals->GetOutput();
+
+  vtkSmartPointer< vtkTensorGlyph > tensorGlyph = vtkSmartPointer< vtkTensorGlyph >::New();
+  tensorGlyph->SetSourceConnection( sphere->GetOutputPort() );
   tensorGlyph->SetInputConnection( reader->GetOutputPort() );
   tensorGlyph->SetColorModeToEigenvalues();
   tensorGlyph->SetExtractEigenvalues( true );
@@ -66,17 +85,16 @@ void createGlyphs( const char * filename, vtkSmartPointer< vtkPolyData > & signe
   // taken from Graphics/Testing/Python/TestTensorGlyph.py
   vtkSmartPointer< vtkPolyDataNormals > normals = vtkSmartPointer< vtkPolyDataNormals >::New();
   normals->SetInputConnection( tensorGlyph->GetOutputPort() );
-
   normals->Update();
 
-  signedGlyphs = normals->GetOutput();
+  glyphs = normals->GetOutput();
 }
 
 int main( int argc, char * argv[] )
 {
   if ( argc < 3 )
     {
-    std::cout << "Usage: " << argv[0] << " uniaxial_tension.vtk uniaxial_compression.vtk" << std::endl;
+    std::cout << "Usage: " << argv[0] << " <uniaxial strain image>.vtk <tension (0) or compression (1)>" << std::endl;
     return 1;
     }
 
@@ -88,23 +106,43 @@ int main( int argc, char * argv[] )
   double blockBounds[6];
   structuredPoints->GetBounds( blockBounds );
 
+  bool tension = false;
+  if( argv[2][0] == '0' )
+    {
+    tension = true;
+    }
+
   std::cout << "block bounds: " << blockBounds[0] << " " << blockBounds[1] << std::endl;
 
   vtkSmartPointer< vtkPolyData > signedGlyphs;
-  createGlyphs( argv[1], signedGlyphs );
+  vtkSmartPointer< vtkPolyData > glyphs;
+  createGlyphs( argv[1], signedGlyphs, glyphs );
 
   vtkSmartPointer< vtkPolyDataMapper > mapper = vtkSmartPointer< vtkPolyDataMapper >::New();
-  mapper->SetInput( signedGlyphs );
+  mapper->SetInput( glyphs );
 
   vtkSmartPointer< vtkActor > actor = vtkSmartPointer< vtkActor >::New();
   actor->SetMapper( mapper );
 
   vtkSmartPointer<vtkOutlineFilter> outline = vtkSmartPointer<vtkOutlineFilter>::New();
-  outline->SetInput( signedGlyphs );
+  outline->SetInput( glyphs );
   vtkSmartPointer<vtkPolyDataMapper> outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   outlineMapper->SetInputConnection( outline->GetOutputPort() );
   vtkSmartPointer<vtkActor> outlineActor = vtkSmartPointer<vtkActor>::New();
   outlineActor->SetMapper( outlineMapper );
+
+  vtkSmartPointer< vtkPolyDataMapper > signedMapper = vtkSmartPointer< vtkPolyDataMapper >::New();
+  signedMapper->SetInput( signedGlyphs );
+
+  vtkSmartPointer< vtkActor > signedActor = vtkSmartPointer< vtkActor >::New();
+  signedActor->SetMapper( signedMapper );
+
+  vtkSmartPointer<vtkOutlineFilter> signedOutline = vtkSmartPointer<vtkOutlineFilter>::New();
+  signedOutline->SetInput( signedGlyphs );
+  vtkSmartPointer<vtkPolyDataMapper> signedOutlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+  signedOutlineMapper->SetInputConnection( signedOutline->GetOutputPort() );
+  vtkSmartPointer<vtkActor> signedOutlineActor = vtkSmartPointer<vtkActor>::New();
+  signedOutlineActor->SetMapper( signedOutlineMapper );
 
   // the axes
   vtkSmartPointer<vtkAxesActor> axes = vtkSmartPointer<vtkAxesActor>::New();
@@ -145,6 +183,14 @@ int main( int argc, char * argv[] )
   double arrowCenter[3];
 
   vtkSmartPointer<vtkArrowSource> topArrow = vtkSmartPointer<vtkArrowSource>::New();
+  if( tension )
+    {
+    topArrow->InvertOff();
+    }
+  else
+    {
+    topArrow->InvertOn();
+    }
   vtkSmartPointer<vtkPolyDataMapper> topArrowMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   topArrowMapper->SetInputConnection( topArrow->GetOutputPort() );
   vtkSmartPointer<vtkActor> topArrowActor = vtkSmartPointer<vtkActor>::New();
@@ -159,7 +205,14 @@ int main( int argc, char * argv[] )
   topArrowActor->SetUserMatrix( topArrowTransform->GetMatrix() );
 
   vtkSmartPointer<vtkArrowSource> bottomArrow = vtkSmartPointer<vtkArrowSource>::New();
-  bottomArrow->InvertOn();
+  if( tension )
+    {
+    bottomArrow->InvertOn();
+    }
+  else
+    {
+    bottomArrow->InvertOff();
+    }
   vtkSmartPointer<vtkPolyDataMapper> bottomArrowMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   bottomArrowMapper->SetInputConnection( bottomArrow->GetOutputPort() );
   vtkSmartPointer<vtkActor> bottomArrowActor = vtkSmartPointer<vtkActor>::New();
@@ -182,15 +235,33 @@ int main( int argc, char * argv[] )
   renderer->AddActor( topPlateActor );
   renderer->AddActor( topArrowActor );
   renderer->AddActor( bottomArrowActor );
+  double leftViewport[4] = { 0.0, 0.0, 0.5, 1.0 };
+  renderer->SetViewport( leftViewport );
+
+  vtkSmartPointer<vtkRenderer> signedRenderer = vtkSmartPointer<vtkRenderer>::New();
+  signedRenderer->SetBackground( 0.2, 0.2, 0.2 );
+  signedRenderer->AddActor( signedActor );
+  signedRenderer->AddActor( signedOutlineActor );
+  signedRenderer->AddActor( axes );
+  signedRenderer->AddActor( bottomPlateActor );
+  signedRenderer->AddActor( topPlateActor );
+  signedRenderer->AddActor( topArrowActor );
+  signedRenderer->AddActor( bottomArrowActor );
+  double rightViewport[4] = { 0.5, 0.0, 1.0, 1.0 };
+  signedRenderer->SetViewport( rightViewport );
 
   vtkSmartPointer< vtkRenderWindow > renderWindow = vtkSmartPointer< vtkRenderWindow >::New();
   renderWindow->AddRenderer( renderer );
-  renderWindow->SetSize( 800, 800 );
+  renderWindow->AddRenderer( signedRenderer );
+  renderWindow->SetSize( 1600, 800 );
 
   vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
   renderWindowInteractor->SetRenderWindow( renderWindow );
 
   renderWindow->Render();
+  // couple the cameras
+  vtkCamera * camera = renderer->GetActiveCamera();
+  signedRenderer->SetActiveCamera( camera );
   renderWindowInteractor->Initialize();
   renderWindowInteractor->Start();
 
