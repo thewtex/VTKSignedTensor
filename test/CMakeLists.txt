@@ -20,6 +20,7 @@ add_test( vtkSignedEigenvalueTensorGlyphTest vtk-signed-tensor-glyph
   strain_flavors_strain.vtk )
 
 add_test( GenerateStrainFlavors ${CMAKE_CURRENT_SOURCE_DIR}/generate_strain_flavors.py )
+add_test( GenerateUniaxialLoad ${CMAKE_CURRENT_SOURCE_DIR}/generate_uniaxial_load.py )
 
 set_tests_properties( vtkTensorGlyphTest vtkSignedEigenvalueTensorGlyphTest
   PROPERTIES DEPENDS GenerateStrainFlavors )
