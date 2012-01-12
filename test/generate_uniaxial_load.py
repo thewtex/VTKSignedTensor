@@ -7,7 +7,7 @@ import numpy as np
 def write_uniaxial_strain(filename, axial_strain):
     poissons_ratio = 0.3
     lateral_strain = -poissons_ratio * axial_strain
-    side_points = 10
+    side_points = 4
     with open(filename, 'w') as f:
         f.write('# vtk DataFile Version 2.0\n')
         f.write('Strain tensors for uniaxial loading of a cube.\n')

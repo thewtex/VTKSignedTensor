@@ -277,23 +277,17 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
   vtkMatrix4x4 *matrix = vtkMatrix4x4::New();
   double tensor[9];
   // set up working matrices
-  double * tensorMatrix[3];
+  double tensorMatrix[3][3];
   double tensorMatrixRow0[3];
   double tensorMatrixRow1[3];
   double tensorMatrixRow2[3];
-  tensorMatrix[0] = tensorMatrixRow0;
-  tensorMatrix[1] = tensorMatrixRow1;
-  tensorMatrix[2] = tensorMatrixRow2;
 
   double eigenvalues[3];
 
-  double * eigenvectors[3];
+  double eigenvectors[3][3];
   double eigenvectorsRow0[3];
   double eigenvectorsRow1[3];
   double eigenvectorsRow2[3];
-  eigenvectors[0] = eigenvectorsRow0;
-  eigenvectors[1] = eigenvectorsRow1;
-  eigenvectors[2] = eigenvectorsRow2;
   double xEigenvector[3];
   double yEigenvector[3];
   double zEigenvector[3];
@@ -315,7 +309,7 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
           tensorMatrix[ii][jj] = tensor[ii+3*jj];
           }
         }
-      vtkMath::Jacobi(tensorMatrix, eigenvalues, eigenvectors);
+      vtkMath::Diagonalize3x3(tensorMatrix, eigenvalues, eigenvectors);
 
       //copy eigenvectors
       xEigenvector[0] = eigenvectors[0][0];
@@ -442,6 +436,8 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
     matrix->Element[2][2] = zEigenvector[2];
     transform->Concatenate(matrix);
 
+    transform->Scale(eigenvalues[0], eigenvalues[1], eigenvalues[2]);
+
     if( numberOfNegativeEigenvalues == 1 )
       {
       if( eigenvalues[0] < 0.0 )
@@ -465,7 +461,6 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
         }
       }
 
-    transform->Scale(eigenvalues[0], eigenvalues[1], eigenvalues[2]);
 
     // multiply points (and normals if available) by resulting
     // matrix
