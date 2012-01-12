@@ -44,8 +44,7 @@ vtkSignedEigenvalueTensorGlyph::vtkSignedEigenvalueTensorGlyph()
   this->ClampScaling = 0;
   this->Length = 1.0;
 
-  this->SetNumberOfInputPorts(2);
-  this->SetNumberOfInputConnections(1, 4);
+  this->SetNumberOfInputPorts(5);
 
   // by default, process active point tensors
   this->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,
@@ -108,28 +107,21 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
   // get the input and output
   vtkDataSet *input = vtkDataSet::SafeDownCast(
     inInfo->Get(vtkDataObject::DATA_OBJECT()));
-  const int numberOfGeometrySources = inputVector[1]->GetNumberOfInformationObjects();
-  const int numberOfExpectedGeometrySources = 4;
-  if( numberOfGeometrySources != numberOfExpectedGeometrySources )
-    {
-    vtkErrorMacro(<< "The number of geometry sources, " << numberOfGeometrySources <<
-      ", did not match the number of expected number of geometry sources, " << numberOfExpectedGeometrySources
-      << ". Please add more sources with SetSourceConnection().");
-    }
+  const int numberOfGeometrySources = 4;
   // An array containing the glyphs.  The elements are:
   //         0         | geometry for zero negative eigenvalues
   //         1         | geometry for one negative eigenvalue
   //         2         | geometry for two negative eigenvalue
   //         3         | geometry for three negative eigenvalue
   vtkPolyData * sources[numberOfGeometrySources];
-  for( int ii = 0; ii < numberOfGeometrySources; ++ii )
+  for( int ii = 1; ii <= numberOfGeometrySources; ++ii )
     {
-    vtkInformation *sourceInfo = inputVector[1]->GetInformationObject( ii );
+    vtkInformation *sourceInfo = inputVector[ii]->GetInformationObject( 0 );
     if( !sourceInfo )
       {
       vtkErrorMacro(<< "Geometry source " << ii << " is NULL.");
       }
-    sources[ii] = vtkPolyData::SafeDownCast(
+    sources[ii-1] = vtkPolyData::SafeDownCast(
       sourceInfo->Get(vtkDataObject::DATA_OBJECT()));
     }
   vtkPolyData *output = vtkPolyData::SafeDownCast(
@@ -154,6 +146,10 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
   //
   vtkIdType maxNumberOfSourcePoints = 0;
   vtkIdType maxNumberOfSourceCells = 0;
+  vtkIdType maxVertsSize = 0;
+  vtkIdType maxLinesSize = 0;
+  vtkIdType maxPolysSize = 0;
+  vtkIdType maxStripsSize = 0;
   int sourcesMaxCellSize = 0;
   bool sourcesPointDataHaveNormals = false;
   for( int ii = 0; ii < numberOfGeometrySources; ++ii )
@@ -184,37 +180,41 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
     numberOfCells = sourceCells->GetNumberOfCells();
     if ( numberOfCells > 0 )
       {
-      vtkCellArray *cells = vtkCellArray::New();
-      cells->Allocate( numberOfInputPts * sourceCells->GetSize() );
-      output->SetVerts( cells );
-      cells->Delete();
+      vtkIdType size = sourceCells->GetSize();
+      if( size > maxVertsSize )
+        {
+        maxVertsSize = size;
+        }
       }
     sourceCells = sources[ii]->GetLines();
     numberOfCells = sourceCells->GetNumberOfCells();
     if ( numberOfCells > 0 )
       {
-      vtkCellArray *cells = vtkCellArray::New();
-      cells->Allocate( numberOfInputPts * sourceCells->GetSize() );
-      output->SetLines( cells );
-      cells->Delete();
+      vtkIdType size = sourceCells->GetSize();
+      if( size > maxLinesSize )
+        {
+        maxLinesSize = size;
+        }
       }
     sourceCells = sources[ii]->GetPolys();
     numberOfCells = sourceCells->GetNumberOfCells();
     if ( numberOfCells > 0 )
       {
-      vtkCellArray *cells = vtkCellArray::New();
-      cells->Allocate( numberOfInputPts * sourceCells->GetSize() );
-      output->SetPolys( cells );
-      cells->Delete();
+      vtkIdType size = sourceCells->GetSize();
+      if( size > maxPolysSize )
+        {
+        maxPolysSize = size;
+        }
       }
     sourceCells = sources[ii]->GetStrips();
     numberOfCells = sourceCells->GetNumberOfCells();
     if ( numberOfCells > 0 )
       {
-      vtkCellArray *cells = vtkCellArray::New();
-      cells->Allocate( numberOfInputPts * sourceCells->GetSize() );
-      output->SetStrips( cells );
-      cells->Delete();
+      vtkIdType size = sourceCells->GetSize();
+      if( size > maxStripsSize )
+        {
+        maxStripsSize = size;
+        }
       }
 
     vtkPointData * pointData = sources[ii]->GetPointData();
@@ -223,6 +223,22 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
       sourcesPointDataHaveNormals = true;
       }
     } // end for each glyph source
+  vtkCellArray *cells = vtkCellArray::New();
+  cells->Allocate( numberOfInputPts * maxVertsSize );
+  output->SetVerts( cells );
+  cells->Delete();
+  cells = vtkCellArray::New();
+  cells->Allocate( numberOfInputPts * maxLinesSize );
+  output->SetLines( cells );
+  cells->Delete();
+  cells = vtkCellArray::New();
+  cells->Allocate( numberOfInputPts * maxPolysSize );
+  output->SetPolys( cells );
+  cells->Delete();
+  cells = vtkCellArray::New();
+  cells->Allocate( numberOfInputPts * maxStripsSize );
+  output->SetStrips( cells );
+  cells->Delete();
   vtkPoints *newPts = vtkPoints::New();
   newPts->Allocate( numberOfInputPts * maxNumberOfSourcePoints );
   vtkIdType *pts = new vtkIdType[sourcesMaxCellSize];
@@ -282,6 +298,7 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
   double yEigenvector[3];
   double zEigenvector[3];
 
+  vtkIdType ptIncr = 0;
   for (vtkIdType inputPointId = 0; inputPointId < numberOfInputPts; ++inputPointId)
     {
     // Translation is postponed
@@ -323,8 +340,6 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
       eigenvalues[1] = vtkMath::Normalize(yEigenvector);
       eigenvalues[2] = vtkMath::Normalize(zEigenvector);
       }
-
-    std::cout << "eigenvalues: " << eigenvalues[0] << " " << eigenvalues[1] << " " << eigenvalues[2] << std::endl;
 
     // compute scale factors
     eigenvalues[0] *= this->ScaleFactor;
@@ -385,7 +400,6 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
 
     vtkPolyData * source = sources[numberOfNegativeEigenvalues];
     vtkIdType numberOfSourcePoints = source->GetNumberOfPoints();
-    const vtkIdType ptIncr = inputPointId * numberOfSourcePoints;
     const vtkIdType numberOfSourceCells = source->GetNumberOfCells();
     //
     // copy all topology (transformation independent)
@@ -456,7 +470,7 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
     // multiply points (and normals if available) by resulting
     // matrix
     vtkPoints *sourcePts = source->GetPoints();
-    transform->TransformPoints(sourcePts,newPts);
+    transform->TransformPoints(sourcePts, newPts);
 
     // Apply the transformation to a series of points,
     // and append the results to outPts.
@@ -500,6 +514,7 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
         outputPointData->CopyData(inputPointData, ii, ptIncr+ii);
         }
       }
+    ptIncr += numberOfSourcePoints;
     }
   vtkDebugMacro(<<"Generated " << numberOfInputPts <<" tensor glyphs");
   //
@@ -559,10 +574,9 @@ void vtkSignedEigenvalueTensorGlyph::SetSourceConnection(int id, vtkAlgorithmOut
 //----------------------------------------------------------------------------
 int vtkSignedEigenvalueTensorGlyph::FillInputPortInformation(int port, vtkInformation *info)
 {
-  if (port == 1)
+  if (port >= 1)
     {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPolyData");
-    info->Set(vtkAlgorithm::INPUT_IS_REPEATABLE(), 1);
     return 1;
     }
   info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");

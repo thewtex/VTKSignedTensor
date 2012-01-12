@@ -59,10 +59,10 @@ int main( int argc, char * argv[] )
   vtkSmartPointer< vtkCubeSource > cube = vtkSmartPointer< vtkCubeSource >::New();
 
   vtkSmartPointer< vtkSignedEigenvalueTensorGlyph > tensorGlyph = vtkSmartPointer< vtkSignedEigenvalueTensorGlyph >::New();
-  tensorGlyph->SetSourceConnection(0, sphere->GetOutputPort() );
-  tensorGlyph->SetSourceConnection(1, oneSheetedHyperboloidWithNormals->GetOutputPort() );
-  tensorGlyph->SetSourceConnection(2, twoSheetedHyperboloidWithNormals->GetOutputPort() );
-  tensorGlyph->SetSourceConnection(3, cube->GetOutputPort() );
+  tensorGlyph->SetInputConnection(1, sphere->GetOutputPort() );
+  tensorGlyph->SetInputConnection(2, oneSheetedHyperboloidWithNormals->GetOutputPort() );
+  tensorGlyph->SetInputConnection(3, twoSheetedHyperboloidWithNormals->GetOutputPort() );
+  tensorGlyph->SetInputConnection(4, cube->GetOutputPort() );
   tensorGlyph->SetInputConnection( reader->GetOutputPort() );
   tensorGlyph->SetColorModeToEigenvalues();
   tensorGlyph->SetExtractEigenvalues( true );
