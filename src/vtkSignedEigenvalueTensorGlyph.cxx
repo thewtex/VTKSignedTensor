@@ -134,14 +134,6 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
   vtkPolyData *output = vtkPolyData::SafeDownCast(
     outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
-  double x[3], s;
-  vtkIdList *cellPts;
-  int npts;
-  int dir, eigen_dir, symmetric_dir;
-  double xv[3], yv[3], zv[3];
-  double maxScale;
-
-
   vtkDebugMacro(<<"Generating tensor glyphs");
 
   vtkPointData *inputPointData = input->GetPointData();
@@ -390,139 +382,123 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
 
     vtkPolyData * source = sources[numberOfNegativeEigenvalues];
     vtkIdType numberOfSourcePoints = source->GetNumberOfPoints();
-    vtkIdType ptIncr = inputPointId * numberOfSourcePoints;
+    const vtkIdType ptIncr = inputPointId * numberOfSourcePoints;
+    const vtkIdType numberOfSourceCells = source->GetNumberOfCells();
     //
     // copy all topology (transformation independent)
     //
-    for (vtkIdType cellId = 0; cellId < numSourceCells; cellId++)
+    vtkCell *cell;
+    vtkIdList *cellPts;
+    int numberOfCellPoints;
+    for (vtkIdType cellId = 0; cellId < numberOfSourceCells; cellId++)
       {
-      cell = this->GetSource()->GetCell(cellId);
+      cell = source->GetCell(cellId);
       cellPts = cell->GetPointIds();
-      npts = cellPts->GetNumberOfIds();
-      for (dir=0; dir < numDirs; dir++)
+      numberOfCellPoints = cellPts->GetNumberOfIds();
+      // This variable may be removed, but that
+      // will not improve readability
+      for (int ii = 0; ii < numberOfCellPoints; ++ii)
         {
-        // This variable may be removed, but that
-        // will not improve readability
-        vtkIdType subIncr = ptIncr + dir*numSourcePts;
-        for (i=0; i < npts; i++)
-          {
-          pts[i] = cellPts->GetId(i) + subIncr;
-          }
-        output->InsertNextCell(cell->GetCellType(),npts,pts);
+        pts[ii] = cellPts->GetId(ii) + ptIncr;
+        }
+      output->InsertNextCell(cell->GetCellType(), numberOfCellPoints, pts);
+      }
+
+
+    // Remove previous scales ...
+    transform->Identity();
+
+    // translate Source to Input point
+    double location[3];
+    input->GetPoint(inputPointId, location);
+    transform->Translate(location[0], location[1], location[2]);
+
+    // normalized eigenvectors rotate object for eigen direction 0
+    matrix->Element[0][0] = xEigenvector[0];
+    matrix->Element[0][1] = yEigenvector[0];
+    matrix->Element[0][2] = zEigenvector[0];
+    matrix->Element[1][0] = xEigenvector[1];
+    matrix->Element[1][1] = yEigenvector[1];
+    matrix->Element[1][2] = zEigenvector[1];
+    matrix->Element[2][0] = xEigenvector[2];
+    matrix->Element[2][1] = yEigenvector[2];
+    matrix->Element[2][2] = zEigenvector[2];
+    transform->Concatenate(matrix);
+
+    if( numberOfNegativeEigenvalues == 1 )
+      {
+      if( eigenvalues[0] < 0.0 )
+        {
+        transform->RotateY(-90.0);
+        }
+      else if( eigenvalues[1] < 0.0 )
+        {
+        transform->RotateX(90.0);
+        }
+      }
+    if( numberOfNegativeEigenvalues == 2 )
+      {
+      if( eigenvalues[0] >= 0.0 )
+        {
+        transform->RotateY(-90.0);
+        }
+      else if( eigenvalues[1] >= 0.0 )
+        {
+        transform->RotateX(90.0);
         }
       }
 
-    // Now do the real work for each "direction"
+    transform->Scale(eigenvalues[0], eigenvalues[1], eigenvalues[2]);
 
-    for (dir=0; dir < numDirs; dir++)
+    // multiply points (and normals if available) by resulting
+    // matrix
+    vtkPoints *sourcePts = source->GetPoints();
+    transform->TransformPoints(sourcePts,newPts);
+
+    // Apply the transformation to a series of points,
+    // and append the results to outPts.
+    vtkDataArray *sourceNormals = source->GetPointData()->GetNormals();
+    if ( sourceNormals )
       {
-      eigen_dir = dir%(this->ThreeGlyphs?3:1);
-      symmetric_dir = dir/(this->ThreeGlyphs?3:1);
-
-      // Remove previous scales ...
-      trans->Identity();
-
-      // translate Source to Input point
-      input->GetPoint(inPtId, x);
-      trans->Translate(x[0], x[1], x[2]);
-
-      // normalized eigenvectors rotate object for eigen direction 0
-      matrix->Element[0][0] = xv[0];
-      matrix->Element[0][1] = yv[0];
-      matrix->Element[0][2] = zv[0];
-      matrix->Element[1][0] = xv[1];
-      matrix->Element[1][1] = yv[1];
-      matrix->Element[1][2] = zv[1];
-      matrix->Element[2][0] = xv[2];
-      matrix->Element[2][1] = yv[2];
-      matrix->Element[2][2] = zv[2];
-      trans->Concatenate(matrix);
-
-      if (eigen_dir == 1)
+      // a negative determinant means the transform turns the
+      // glyph surface inside out, and its surface normals all
+      // point inward. The following scale corrects the surface
+      // normals to point outward.
+      if (transform->GetMatrix()->Determinant() < 0)
         {
-        trans->RotateZ(90.0);
+        transform->Scale(-1.0,-1.0,-1.0);
         }
+      transform->TransformNormals(sourceNormals, newNormals);
+      }
 
-      if (eigen_dir == 2)
+      // Copy point data from source
+    if ( this->ColorGlyphs && inputScalars &&
+         (this->ColorMode == COLOR_BY_SCALARS) )
+      {
+      double scalar = inputScalars->GetComponent(inputPointId, 0);
+      for (int ii = 0; ii < numberOfInputPts; ++ii)
         {
-        trans->RotateY(-90.0);
+        newScalars->InsertTuple(ptIncr+ii, &scalar);
         }
-
-      if (this->ThreeGlyphs)
+      }
+    else if (this->ColorGlyphs &&
+             (this->ColorMode == COLOR_BY_EIGENVALUES) )
+      {
+      double scalar = eigenvalues[0];
+      for (int ii = 0; ii < numberOfSourcePoints; ++ii)
         {
-        trans->Scale(w[eigen_dir], this->ScaleFactor, this->ScaleFactor);
+        newScalars->InsertTuple(ptIncr+ii, &scalar);
         }
-      else
+      }
+    else
+      {
+      for (int ii=0; ii < numberOfSourcePoints; ++ii)
         {
-        trans->Scale(w[0], w[1], w[2]);
+        outputPointData->CopyData(inputPointData, ii, ptIncr+ii);
         }
-
-      // Mirror second set to the symmetric position
-      if (symmetric_dir == 1)
-        {
-        trans->Scale(-1.,1.,1.);
-        }
-
-      // if the eigenvalue is negative, shift to reverse direction.
-      // The && is there to ensure that we do not change the
-      // old behaviour of vtkSignedEigenvalueTensorGlyphs (which only used one dir),
-      // in case there is an oriented glyph, e.g. an arrow.
-      if (w[eigen_dir] < 0 && numDirs > 1)
-        {
-        trans->Translate(-this->Length, 0., 0.);
-        }
-
-      // multiply points (and normals if available) by resulting
-      // matrix
-      trans->TransformPoints(sourcePts,newPts);
-
-      // Apply the transformation to a series of points,
-      // and append the results to outPts.
-      if ( newNormals )
-        {
-        // a negative determinant means the transform turns the
-        // glyph surface inside out, and its surface normals all
-        // point inward. The following scale corrects the surface
-        // normals to point outward.
-        if (trans->GetMatrix()->Determinant() < 0)
-          {
-          trans->Scale(-1.0,-1.0,-1.0);
-          }
-        trans->TransformNormals(sourceNormals,newNormals);
-        }
-
-        // Copy point data from source
-      if ( this->ColorGlyphs && inScalars &&
-           (this->ColorMode == COLOR_BY_SCALARS) )
-        {
-        s = inScalars->GetComponent(inPtId, 0);
-        for (i=0; i < numSourcePts; i++)
-          {
-          newScalars->InsertTuple(ptIncr+i, &s);
-          }
-        }
-      else if (this->ColorGlyphs &&
-               (this->ColorMode == COLOR_BY_EIGENVALUES) )
-        {
-        // If ThreeGlyphs is false we use the first (largest)
-        // eigenvalue as scalar.
-        s = w[eigen_dir];
-        for (i=0; i < numSourcePts; i++)
-          {
-          newScalars->InsertTuple(ptIncr+i, &s);
-          }
-        }
-      else
-        {
-        for (i=0; i < numSourcePts; i++)
-          {
-          outPD->CopyData(pd,i,ptIncr+i);
-          }
-        }
-      ptIncr += numSourcePts;
       }
     }
-  vtkDebugMacro(<<"Generated " << numPts <<" tensor glyphs");
+  vtkDebugMacro(<<"Generated " << numberOfInputPts <<" tensor glyphs");
   //
   // Update output and release memory
   //
@@ -533,19 +509,19 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
 
   if ( newScalars )
     {
-    int idx = outPD->AddArray(newScalars);
-    outPD->SetActiveAttribute(idx, vtkDataSetAttributes::SCALARS);
+    int idx = outputPointData->AddArray(newScalars);
+    outputPointData->SetActiveAttribute(idx, vtkDataSetAttributes::SCALARS);
     newScalars->Delete();
     }
 
   if ( newNormals )
     {
-    outPD->SetNormals(newNormals);
+    outputPointData->SetNormals(newNormals);
     newNormals->Delete();
     }
 
   output->Squeeze();
-  trans->Delete();
+  transform->Delete();
   matrix->Delete();
 
   return 1;
@@ -594,7 +570,6 @@ void vtkSignedEigenvalueTensorGlyph::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os,indent);
 
-  os << indent << "Source: " << this->GetSource() << "\n";
   os << indent << "Scaling: " << (this->Scaling ? "On\n" : "Off\n");
   os << indent << "Scale Factor: " << this->ScaleFactor << "\n";
   os << indent << "Extract Eigenvalues: " << (this->ExtractEigenvalues ? "On\n" : "Off\n");
