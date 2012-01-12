@@ -1,15 +1,20 @@
 #include "vtkActor.h"
+#include "vtkActor2D.h"
 #include "vtkCamera.h"
 #include "vtkCubeSource.h"
 #include "vtkExtractVOI.h"
+#include "vtkLabelPlacementMapper.h"
 #include "vtkLookupTable.h"
 #include "vtkInteractorStyleImage.h"
-#include "vtkOutlineFilter.h"
 #include "vtkOneSheetedHyperboloidSource.h"
+#include "vtkPointData.h"
+#include "vtkPointSetToLabelHierarchy.h"
 #include "vtkPolyDataMapper.h"
 #include "vtkPolyDataNormals.h"
+#include "vtkPolyData.h"
 #include "vtkSmartPointer.h"
 #include "vtkSphereSource.h"
+#include "vtkStringArray.h"
 #include "vtkStructuredPoints.h"
 #include "vtkStructuredPointsReader.h"
 #include "vtkSignedEigenvalueTensorGlyph.h"
@@ -19,6 +24,7 @@
 #include "vtkRenderWindowInteractor.h"
 
 #include <iostream>
+#include <fstream>
 
 int main( int argc, char * argv[] )
 {
@@ -27,11 +33,6 @@ int main( int argc, char * argv[] )
     std::cout << "Usage: " << argv[0] << " <tensor_image>.vtk" << std::endl;
     return 1;
     }
-
-  //vtkSmartPointer< vtkCamera > camera = vtkSmartPointer< vtkCamera >::New();
-  //camera->SetViewUp     (0.0, 1.0, 0.0);
-  //camera->SetFocalPoint (404.70907910888917, -202.13628697726463, 0.0);
-  //camera->SetPosition   (404.70907910888917, -202.13628697726463, 850.1861762830398);
 
   vtkSmartPointer< vtkStructuredPointsReader > reader = vtkSmartPointer< vtkStructuredPointsReader >::New();
   reader->SetFileName( argv[1] );
@@ -89,24 +90,86 @@ int main( int argc, char * argv[] )
   vtkSmartPointer< vtkActor > actor = vtkSmartPointer< vtkActor >::New();
   actor->SetMapper( mapper );
   //actor->RotateZ( -90.0 );
+  
+  const unsigned int numberOfTensors = 8;
+  const unsigned int numberOfAngles = 6;
+  vtkSmartPointer< vtkPolyData > labelPoints = vtkSmartPointer< vtkPolyData >::New();
+  vtkSmartPointer< vtkPoints > labelPointsPts = vtkSmartPointer< vtkPoints >::New();
+  labelPointsPts->Allocate( numberOfAngles + numberOfTensors  + 2 );
+  labelPoints->SetPoints( labelPointsPts );
 
-  vtkSmartPointer< vtkOutlineFilter > outline = vtkSmartPointer< vtkOutlineFilter >::New();
-  outline->SetInputConnection( reader->GetOutputPort() );
-  vtkSmartPointer< vtkPolyDataMapper > outlineMapper = vtkSmartPointer< vtkPolyDataMapper >::New();
-  outlineMapper->SetInputConnection( outline->GetOutputPort() );
-  vtkSmartPointer< vtkActor > outlineActor = vtkSmartPointer< vtkActor >::New();
-  outlineActor->SetMapper( outlineMapper );
-  //outlineActor->RotateZ( -90.0 );
+  vtkSmartPointer< vtkStringArray > labels = vtkSmartPointer< vtkStringArray >::New();
+  labels->SetNumberOfValues( numberOfAngles + numberOfTensors + 2 );
+  labels->SetName( "labels" );
+  std::ifstream tensorsFile( "strain_flavors_eigenvalues.txt", std::ifstream::in );
+
+  if( !tensorsFile.is_open() )
+    {
+    std::cerr << "Could not open the eigenvalues file." << std::endl;
+    return 1;
+    }
+  std::string line;
+  double location[3];
+  location[0] = -2.0;
+  location[1] = 0.0;
+  location[2] = 0.0;
+  for( unsigned int ii = 0; ii < numberOfTensors; ++ii )
+    {
+    std::getline(tensorsFile, line);
+    labels->SetValue( ii, line.c_str() );
+    labelPointsPts->InsertNextPoint( location );
+    location[1] += 1.0;
+    }
+  tensorsFile.close();
+  std::ifstream anglesFile( "strain_flavors_angles.txt", std::ifstream::in );
+  if( !anglesFile.is_open() )
+    {
+    std::cerr << "Could not open the angles file." << std::endl;
+    return 1;
+    }
+  location[0] = 0.0;
+  location[1] = -1.0;
+  location[2] = 0.0;
+  for( unsigned int ii = numberOfTensors; ii < numberOfAngles + numberOfTensors; ++ii )
+    {
+    std::getline(anglesFile, line);
+    labels->SetValue( ii, line.c_str() );
+    labelPointsPts->InsertNextPoint( location );
+    location[0] += 1.0;
+    }
+  anglesFile.close();
+  labelPoints->GetPointData()->AddArray( labels );
+
+  location[0] = -3.3;
+  location[1] = numberOfTensors / 2.0;
+  location[2] = 0.0;
+  labelPointsPts->InsertNextPoint( location );
+  labels->SetValue( numberOfAngles + numberOfTensors, "Eigenvalues" );
+  location[0] = numberOfAngles / 2.0;
+  location[1] = -2.0;
+  location[2] = 0.0;
+  labelPointsPts->InsertNextPoint( location );
+  labels->SetValue( numberOfAngles + numberOfTensors + 1, "Angles (degrees)" );
+
+  vtkSmartPointer< vtkPointSetToLabelHierarchy > pointSetToLabelHierarchy = vtkSmartPointer< vtkPointSetToLabelHierarchy >::New();
+  pointSetToLabelHierarchy->SetInput( labelPoints );
+  pointSetToLabelHierarchy->SetLabelArrayName( "labels" );
+  pointSetToLabelHierarchy->Update();
+
+  vtkSmartPointer< vtkLabelPlacementMapper > labelMapper = vtkSmartPointer< vtkLabelPlacementMapper >::New();
+  labelMapper->SetInputConnection( pointSetToLabelHierarchy->GetOutputPort() );
+  vtkSmartPointer< vtkActor2D > labelActor = vtkSmartPointer< vtkActor2D >::New();
+  labelActor->SetMapper( labelMapper );
 
   vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
   renderer->SetBackground( 0.2, 0.2, 0.2 );
   //renderer->SetActiveCamera( camera );
   renderer->AddActor( actor );
-  renderer->AddActor( outlineActor );
+  renderer->AddActor( labelActor );
 
   vtkSmartPointer< vtkRenderWindow > renderWindow = vtkSmartPointer< vtkRenderWindow >::New();
   renderWindow->AddRenderer( renderer );
-  renderWindow->SetSize( 600, 600 );
+  renderWindow->SetSize( 800, 800 );
 
   vtkSmartPointer< vtkInteractorStyleImage > interactorStyle = vtkSmartPointer< vtkInteractorStyleImage >::New();
   vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
