@@ -45,6 +45,7 @@ vtkSignedEigenvalueTensorGlyph::vtkSignedEigenvalueTensorGlyph()
   this->Length = 1.0;
 
   this->SetNumberOfInputPorts(2);
+  this->SetNumberOfInputConnections(1, 4);
 
   // by default, process active point tensors
   this->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS,
@@ -112,7 +113,7 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
   if( numberOfGeometrySources != numberOfExpectedGeometrySources )
     {
     vtkErrorMacro(<< "The number of geometry sources, " << numberOfGeometrySources <<
-      " did not match the number of expected number of geometry sources, " << numberOfExpectedGeometrySources
+      ", did not match the number of expected number of geometry sources, " << numberOfExpectedGeometrySources
       << ". Please add more sources with SetSourceConnection().");
     }
   // An array containing the glyphs.  The elements are:
@@ -322,6 +323,8 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
       eigenvalues[1] = vtkMath::Normalize(yEigenvector);
       eigenvalues[2] = vtkMath::Normalize(zEigenvector);
       }
+
+    std::cout << "eigenvalues: " << eigenvalues[0] << " " << eigenvalues[1] << " " << eigenvalues[2] << std::endl;
 
     // compute scale factors
     eigenvalues[0] *= this->ScaleFactor;
@@ -559,6 +562,7 @@ int vtkSignedEigenvalueTensorGlyph::FillInputPortInformation(int port, vtkInform
   if (port == 1)
     {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPolyData");
+    info->Set(vtkAlgorithm::INPUT_IS_REPEATABLE(), 1);
     return 1;
     }
   info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");

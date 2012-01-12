@@ -14,6 +14,12 @@ add_executable( vtk-two-sheeted-hyperboloid vtkTwoSheetedHyperboloidTest.cxx )
 target_link_libraries( vtk-two-sheeted-hyperboloid ${VTK_LIBRARIES} vtkSignedTensor )
 add_test( vtkTwoSheetedHyperboloidTest vtk-two-sheeted-hyperboloid )
 
+add_executable( vtk-signed-tensor-glyph vtkSignedEigenvalueTensorGlyphTest.cxx )
+target_link_libraries( vtk-signed-tensor-glyph ${VTK_LIBRARIES} vtkSignedTensor )
+add_test( vtkSignedEigenvalueTensorGlyphTest vtk-signed-tensor-glyph
+  strain_flavors_strain.vtk )
+
 add_test( GenerateStrainFlavors ${CMAKE_CURRENT_SOURCE_DIR}/generate_strain_flavors.py )
 
-set_tests_properties( vtkTensorGlyphTest PROPERTIES DEPENDS GenerateStrainFlavors )
+set_tests_properties( vtkTensorGlyphTest vtkSignedEigenvalueTensorGlyphTest
+  PROPERTIES DEPENDS GenerateStrainFlavors )

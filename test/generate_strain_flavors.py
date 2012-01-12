@@ -51,7 +51,7 @@ with open('strain_flavors_strain.vtk', 'w') as f:
             eigenvector_c.shape = (3,1)
 
             lam = np.concatenate((eigenvector_a, eigenvector_b, eigenvector_c), axis=1)
-            tensor = np.dot(np.dot(lam,np.identity(3)*eigenvalues[1]),np.linalg.inv(lam))
+            tensor = np.dot(np.dot(lam,np.identity(3)*eigenval),np.linalg.inv(lam))
             for row in tensor:
                 f.write('{0:.20g} {1:.20g} {2:.20g}\n'.format(row[0], row[1], row[2]))
             f.write('\n')
