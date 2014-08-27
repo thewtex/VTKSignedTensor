@@ -49,6 +49,6 @@ int main( int argc, char * argv[] )
   renderWindowInteractor->SetRenderWindow( renderWindow );
 
   renderWindowInteractor->Start();
-  
+
   return 0;
 }

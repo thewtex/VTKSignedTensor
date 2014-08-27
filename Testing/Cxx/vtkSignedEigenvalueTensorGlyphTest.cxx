@@ -90,7 +90,7 @@ int main( int argc, char * argv[] )
   vtkSmartPointer< vtkActor > actor = vtkSmartPointer< vtkActor >::New();
   actor->SetMapper( mapper );
   //actor->RotateZ( -90.0 );
-  
+
   const unsigned int numberOfTensors = 8;
   const unsigned int numberOfAngles = 6;
   vtkSmartPointer< vtkPolyData > labelPoints = vtkSmartPointer< vtkPolyData >::New();

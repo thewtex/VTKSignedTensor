@@ -55,4 +55,3 @@ with open('strain_flavors_strain.vtk', 'w') as f:
             for row in tensor:
                 f.write('{0:.20g} {1:.20g} {2:.20g}\n'.format(row[0], row[1], row[2]))
             f.write('\n')
-

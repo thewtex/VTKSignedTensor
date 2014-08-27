@@ -30,4 +30,3 @@ axial_strain = -0.05
 write_uniaxial_strain('uniaxial_compression.vtk', axial_strain)
 axial_strain = 0.05
 write_uniaxial_strain('uniaxial_tension.vtk', axial_strain)
-

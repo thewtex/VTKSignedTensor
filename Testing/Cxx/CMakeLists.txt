@@ -31,3 +31,7 @@ set_tests_properties( vtkTensorGlyphTest vtkSignedEigenvalueTensorGlyphTest
   PROPERTIES DEPENDS GenerateStrainFlavors )
 set_tests_properties( vtkUniAxialLoadingTensionTest vtkUniAxialLoadingCompressionTest
   PROPERTIES DEPENDS GenerateUniaxialLoad )
+
+vtk_add_test_cxx(${vtk-module}CxxTests tests
+  )
+vtk_test_cxx_executable(${vtk-module}CxxTests tests)
