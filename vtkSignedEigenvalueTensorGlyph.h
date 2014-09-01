@@ -77,9 +77,10 @@
 #ifndef __vtkSignedEigenvalueTensorGlyph_h
 #define __vtkSignedEigenvalueTensorGlyph_h
 
+#include "SignedTensorModule.h"
 #include "vtkPolyDataAlgorithm.h"
 
-class VTK_GRAPHICS_EXPORT vtkSignedEigenvalueTensorGlyph : public vtkPolyDataAlgorithm
+class SIGNEDTENSOR_EXPORT vtkSignedEigenvalueTensorGlyph : public vtkPolyDataAlgorithm
 {
 public:
   vtkTypeMacro(vtkSignedEigenvalueTensorGlyph,vtkPolyDataAlgorithm);

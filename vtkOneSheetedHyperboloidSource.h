@@ -36,11 +36,12 @@
 #ifndef __vtkOneSheetedHyperboloidSource_h
 #define __vtkOneSheetedHyperboloidSource_h
 
+#include "SignedTensorModule.h"
 #include "vtkPolyDataAlgorithm.h"
 
 #define VTK_MAX_ONE_SHEETED_HYPERBOLOID_RESOLUTION 1024
 
-class VTK_GRAPHICS_EXPORT vtkOneSheetedHyperboloidSource : public vtkPolyDataAlgorithm
+class SIGNEDTENSOR_EXPORT vtkOneSheetedHyperboloidSource : public vtkPolyDataAlgorithm
 {
 public:
   vtkTypeMacro(vtkOneSheetedHyperboloidSource,vtkPolyDataAlgorithm);
