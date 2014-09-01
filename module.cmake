@@ -1,4 +1,6 @@
 vtk_module(SignedTensor
+  GROUPS
+    StandAlone
   DEPENDS
     vtkCommonExecutionModel
     vtkCommonCore
@@ -6,6 +8,7 @@ vtk_module(SignedTensor
     vtkCommonExecutionModel
     vtkCommonTransforms
   TEST_DEPENDS
+    vtkTestingRendering
     vtkFiltersCore
     vtkFiltersModeling
     vtkIOLegacy
@@ -15,4 +18,6 @@ vtk_module(SignedTensor
     vtkRenderingLabel
     vtkRendering${VTK_RENDERING_BACKEND}
     vtkRenderingCore
+  KIT
+    vtkFilters
   )
