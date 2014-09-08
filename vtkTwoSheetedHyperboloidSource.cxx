@@ -302,19 +302,7 @@ int vtkTwoSheetedHyperboloidSource::RequestInformation(
   // get the info object
   vtkInformation *outInfo = outputVector->GetInformationObject(0);
 
-  outInfo->Set(vtkStreamingDemandDrivenPipeline::MAXIMUM_NUMBER_OF_PIECES(),
-               -1);
-
-  const double zTerm = 1.0 + this->ZMax * this->ZMax / (this->ShapeParameters[2] * this->ShapeParameters[2]);
-  const double xMax = sqrt(this->ShapeParameters[0] * this->ShapeParameters[0] * zTerm);
-  const double yMax = sqrt(this->ShapeParameters[1] * this->ShapeParameters[1] * zTerm);
-  outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_BOUNDING_BOX(),
-               this->Center[0] - xMax,
-               this->Center[0] + xMax,
-               this->Center[1] - yMax,
-               this->Center[1] + yMax,
-               this->Center[2] - this->ZMax,
-               this->Center[2] + this->ZMax);
+  outInfo->Set(CAN_HANDLE_PIECE_REQUEST(), 1);
 
   return 1;
 }
