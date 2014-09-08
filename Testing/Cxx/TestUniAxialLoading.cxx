@@ -119,26 +119,26 @@ int main( int argc, char * argv[] )
   createGlyphs( argv[1], signedGlyphs, glyphs );
 
   vtkSmartPointer< vtkPolyDataMapper > mapper = vtkSmartPointer< vtkPolyDataMapper >::New();
-  mapper->SetInput( glyphs );
+  mapper->SetInputData( glyphs );
 
   vtkSmartPointer< vtkActor > actor = vtkSmartPointer< vtkActor >::New();
   actor->SetMapper( mapper );
 
   vtkSmartPointer<vtkOutlineFilter> outline = vtkSmartPointer<vtkOutlineFilter>::New();
-  outline->SetInput( glyphs );
+  outline->SetInputData( glyphs );
   vtkSmartPointer<vtkPolyDataMapper> outlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   outlineMapper->SetInputConnection( outline->GetOutputPort() );
   vtkSmartPointer<vtkActor> outlineActor = vtkSmartPointer<vtkActor>::New();
   outlineActor->SetMapper( outlineMapper );
 
   vtkSmartPointer< vtkPolyDataMapper > signedMapper = vtkSmartPointer< vtkPolyDataMapper >::New();
-  signedMapper->SetInput( signedGlyphs );
+  signedMapper->SetInputData( signedGlyphs );
 
   vtkSmartPointer< vtkActor > signedActor = vtkSmartPointer< vtkActor >::New();
   signedActor->SetMapper( signedMapper );
 
   vtkSmartPointer<vtkOutlineFilter> signedOutline = vtkSmartPointer<vtkOutlineFilter>::New();
-  signedOutline->SetInput( signedGlyphs );
+  signedOutline->SetInputData( signedGlyphs );
   vtkSmartPointer<vtkPolyDataMapper> signedOutlineMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   signedOutlineMapper->SetInputConnection( signedOutline->GetOutputPort() );
   vtkSmartPointer<vtkActor> signedOutlineActor = vtkSmartPointer<vtkActor>::New();

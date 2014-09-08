@@ -131,7 +131,7 @@ int main( int argc, char * argv[] )
   labels->SetValue( numberOfAngles + numberOfTensors + 1, "Angles (degrees)" );
 
   vtkSmartPointer< vtkPointSetToLabelHierarchy > pointSetToLabelHierarchy = vtkSmartPointer< vtkPointSetToLabelHierarchy >::New();
-  pointSetToLabelHierarchy->SetInput( labelPoints );
+  pointSetToLabelHierarchy->SetInputData( labelPoints );
   pointSetToLabelHierarchy->SetLabelArrayName( "labels" );
   pointSetToLabelHierarchy->Update();
 
