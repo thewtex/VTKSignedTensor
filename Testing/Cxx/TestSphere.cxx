@@ -9,7 +9,7 @@
 #include "vtkRenderWindowInteractor.h"
 #include <iostream>
 
-int main( int argc, char * argv[] )
+int TestSphere( int argc, char * argv[] )
 {
   vtkSmartPointer< vtkSphereSource > sphere = vtkSmartPointer< vtkSphereSource >::New();
   sphere->SetThetaResolution( 50 );

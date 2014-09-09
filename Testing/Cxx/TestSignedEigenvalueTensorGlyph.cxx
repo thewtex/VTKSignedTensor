@@ -26,7 +26,7 @@
 #include <iostream>
 #include <fstream>
 
-int main( int argc, char * argv[] )
+int TestSignedEigenvalueTensorGlyph( int argc, char * argv[] )
 {
   if ( argc < 2 )
     {

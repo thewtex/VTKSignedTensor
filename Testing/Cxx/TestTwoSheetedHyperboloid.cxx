@@ -11,7 +11,7 @@
 #include "vtkRenderWindowInteractor.h"
 #include <iostream>
 
-int main( int argc, char * argv[] )
+int TestTwoSheetedHyperboloid( int argc, char * argv[] )
 {
   vtkSmartPointer< vtkTwoSheetedHyperboloidSource > hyperboloid = vtkSmartPointer< vtkTwoSheetedHyperboloidSource >::New();
   hyperboloid->SetThetaResolution( 90 );

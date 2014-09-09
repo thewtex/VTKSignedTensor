@@ -90,7 +90,7 @@ void createGlyphs( const char * filename,
   glyphs = normals->GetOutput();
 }
 
-int main( int argc, char * argv[] )
+int TestUniAxialLoading( int argc, char * argv[] )
 {
   if ( argc < 3 )
     {
