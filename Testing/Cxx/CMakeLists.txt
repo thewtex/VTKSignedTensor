@@ -1,7 +1,3 @@
-#add_executable( vtk-tensor-glyph vtkTensorGlyphTest.cxx )
-#target_link_libraries( vtk-tensor-glyph ${VTK_LIBRARIES} )
-#add_test( vtkTensorGlyphTest vtk-tensor-glyph strain_flavors_strain.vtk )
-
 #add_executable( vtk-sphere vtkSphereTest.cxx )
 #target_link_libraries( vtk-sphere ${VTK_LIBRARIES} )
 #add_test( vtkSphereTest vtk-sphere )
@@ -32,7 +28,11 @@
 #set_tests_properties( vtkUniAxialLoadingTensionTest vtkUniAxialLoadingCompressionTest
   #PROPERTIES DEPENDS GenerateUniaxialLoad )
 
+set(TestTensorGlyph_ARGS DATA{../Data/Input/StrainFlavorsStrain.vtk}
+  DATA{../Data/Input/StrainFlavorsEigenvalues.txt}
+  DATA{../Data/Input/StrainFlavorsAngles.txt})
 vtk_add_test_cxx(${vtk-module}CxxTests tests
+  NO_DATA
   TestTensorGlyph.cxx,NO_VALID
   TestSignedEigenvalueTensorGlyph.cxx,NO_VALID
   TestSphere.cxx,NO_VALID

@@ -15,7 +15,7 @@ eigenvalues = [[e_a, e_b, e_c],
         [e_a, e_b, -e_c],
         [-e_a, -e_b, -e_c]]
 
-with open('strain_flavors_eigenvalues.txt', 'w') as f:
+with open('StrainFlavorsEigenvalues.txt', 'w') as f:
     for eigenval in eigenvalues:
         for ii in range(2):
             f.write('{0:g}\t'.format(eigenval[ii]))
@@ -25,11 +25,11 @@ angles = [0.0]
 while(angles[-1] < 300.0):
     angles.append(angles[-1] + 60.0)
 
-with open('strain_flavors_angles.txt', 'w') as f:
+with open('StrainFlavorsAngles.txt', 'w') as f:
     for a in angles:
         f.write('{0}\n'.format(a))
 
-with open('strain_flavors_strain.vtk', 'w') as f:
+with open('StrainFlavorsStrain.vtk', 'w') as f:
     f.write('# vtk DataFile Version 2.0\n')
     f.write('Different strain flavors.\n')
     f.write('ASCII\n')
