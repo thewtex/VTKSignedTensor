@@ -33,7 +33,7 @@ set(TestTensorGlyph_ARGS DATA{../Data/Input/StrainFlavorsStrain.vtk}
   DATA{../Data/Input/StrainFlavorsAngles.txt})
 vtk_add_test_cxx(${vtk-module}CxxTests tests
   NO_DATA
-  TestTensorGlyph.cxx,NO_VALID
+  TestTensorGlyph.cxx
   TestSignedEigenvalueTensorGlyph.cxx,NO_VALID
   TestSphere.cxx,NO_VALID
   TestOneSheetedHyperboloid.cxx,NO_VALID

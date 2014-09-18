@@ -36,12 +36,12 @@
 #include "vtkStructuredPointsReader.h"
 #include "vtkTensorGlyph.h"
 #include "vtkTesting.h"
+#include "vtkRegressionTestImage.h"
 #include "vtkRenderWindow.h"
 #include "vtkRenderer.h"
 #include "vtkRenderWindowInteractor.h"
 #include "vtkNew.h"
 
-#include <iostream>
 #include <fstream>
 
 int TestTensorGlyph( int argc, char * argv[] )
@@ -51,7 +51,7 @@ int TestTensorGlyph( int argc, char * argv[] )
     std::cerr << "Usage: " << argv[0]
               << " <TensorImage.vtk> <Eigenvalues.txt> <Angles.txt>"
               << " -T TemporaryDirectory [-I]" << std::endl;
-    return 1;
+    return EXIT_FAILURE;
     }
   const char * tensorImageFileName = argv[1];
   const char * eigenvaluesFileName = argv[2];
@@ -185,7 +185,18 @@ int TestTensorGlyph( int argc, char * argv[] )
 
   renderWindow->Render();
   renderWindowInteractor->Initialize();
-  renderWindowInteractor->Start();
+  const int returnValue = vtkTesting::Test(argc, argv, renderWindow, 20);
+  if( returnValue == vtkTesting::DO_INTERACTOR )
+    {
+    renderWindowInteractor->Start();
+    }
 
-  return 0;
+  if ((returnValue == vtkTesting::PASSED) || (returnValue == vtkTesting::DO_INTERACTOR))
+    {
+    return EXIT_SUCCESS;
+    }
+  else
+    {
+    return EXIT_FAILURE;
+    }
 }

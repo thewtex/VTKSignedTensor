@@ -5,6 +5,7 @@
 #include "vtkExtractVOI.h"
 #include "vtkLabelPlacementMapper.h"
 #include "vtkLookupTable.h"
+#include "vtkNew.h"
 #include "vtkInteractorStyleImage.h"
 #include "vtkOneSheetedHyperboloidSource.h"
 #include "vtkPointData.h"
@@ -23,7 +24,9 @@
 #include "vtkRenderer.h"
 #include "vtkRenderWindowInteractor.h"
 
-#include <iostream>
+#include "vtkWindowToImageFilter.h"
+#include "vtkPNGWriter.h"
+
 #include <fstream>
 
 int TestSignedEigenvalueTensorGlyph( int argc, char * argv[] )
@@ -176,6 +179,16 @@ int TestSignedEigenvalueTensorGlyph( int argc, char * argv[] )
   renderWindowInteractor->SetRenderWindow( renderWindow );
 
   renderWindow->Render();
+
+  vtkNew<vtkWindowToImageFilter> windowToImage;
+  windowToImage->SetInput(renderWindow);
+  windowToImage->Update();
+
+  vtkNew< vtkPNGWriter > pngWriter;
+  pngWriter->SetFileName("/tmp/TestSignedEigenvalueTensorGlyph.png");
+  pngWriter->SetInputConnection(windowToImage->GetOutputPort());
+  pngWriter->Write();
+
   renderWindowInteractor->Initialize();
   renderWindowInteractor->Start();
 
