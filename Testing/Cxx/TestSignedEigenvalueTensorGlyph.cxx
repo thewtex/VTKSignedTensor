@@ -27,8 +27,6 @@
 #include "vtkWindowToImageFilter.h"
 #include "vtkPNGWriter.h"
 
-#include <fstream>
-
 int TestSignedEigenvalueTensorGlyph( int argc, char * argv[] )
 {
   if ( argc < 2 )
