@@ -1,7 +1,3 @@
-#add_executable( vtk-sphere vtkSphereTest.cxx )
-#target_link_libraries( vtk-sphere ${VTK_LIBRARIES} )
-#add_test( vtkSphereTest vtk-sphere )
-
 #add_executable( vtk-two-sheeted-hyperboloid vtkTwoSheetedHyperboloidTest.cxx )
 #target_link_libraries( vtk-two-sheeted-hyperboloid ${VTK_LIBRARIES} vtkSignedTensor )
 #add_test( vtkTwoSheetedHyperboloidTest vtk-two-sheeted-hyperboloid )
@@ -29,7 +25,7 @@ vtk_add_test_cxx(${vtk-module}CxxTests tests
   NO_DATA
   TestTensorGlyph.cxx
   TestSignedEigenvalueTensorGlyph.cxx
-  TestSphere.cxx,NO_VALID
+  TestSphere.cxx
   TestOneSheetedHyperboloid.cxx
   TestTwoSheetedHyperboloid.cxx,NO_VALID
   TestUniAxialLoading.cxx,NO_VALID

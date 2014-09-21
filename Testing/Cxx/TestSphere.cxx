@@ -5,9 +5,10 @@
 #include "vtkSmartPointer.h"
 #include "vtkSphereSource.h"
 #include "vtkRenderWindow.h"
+#include "vtkOutlineFilter.h"
 #include "vtkRenderer.h"
 #include "vtkRenderWindowInteractor.h"
-#include <iostream>
+#include "vtkTesting.h"
 
 int TestSphere( int argc, char * argv[] )
 {
@@ -28,8 +29,16 @@ int TestSphere( int argc, char * argv[] )
   vtkProperty * property = actor->GetProperty();
   property->SetColor( 0.1, 0.7, 0.9 );
 
+  vtkSmartPointer< vtkOutlineFilter > outline = vtkSmartPointer< vtkOutlineFilter >::New();
+  outline->SetInputConnection( sphere->GetOutputPort() );
+  vtkSmartPointer< vtkPolyDataMapper > outlineMapper = vtkSmartPointer< vtkPolyDataMapper >::New();
+  outlineMapper->SetInputConnection( outline->GetOutputPort() );
+  vtkSmartPointer< vtkActor > outlineActor = vtkSmartPointer< vtkActor >::New();
+  outlineActor->SetMapper( outlineMapper );
+
   vtkSmartPointer< vtkRenderer > renderer = vtkSmartPointer< vtkRenderer >::New();
   renderer->AddActor( actor );
+  renderer->AddActor( outlineActor );
   renderer->SetBackground( 0.1, 0.1, 0.1 );
 
   vtkSmartPointer< vtkRenderWindow > renderWindow = vtkSmartPointer< vtkRenderWindow >::New();
@@ -38,9 +47,21 @@ int TestSphere( int argc, char * argv[] )
 
   vtkSmartPointer< vtkRenderWindowInteractor > renderWindowInteractor = vtkSmartPointer< vtkRenderWindowInteractor >::New();
   renderWindowInteractor->SetRenderWindow( renderWindow );
+  renderWindow->Render();
 
-  renderWindowInteractor->Start();
+  renderWindowInteractor->Initialize();
+  const int returnValue = vtkTesting::Test(argc, argv, renderWindow, 20);
+  if( returnValue == vtkTesting::DO_INTERACTOR )
+    {
+    renderWindowInteractor->Start();
+    }
 
-
-  return 0;
+  if ((returnValue == vtkTesting::PASSED) || (returnValue == vtkTesting::DO_INTERACTOR))
+    {
+    return EXIT_SUCCESS;
+    }
+  else
+    {
+    return EXIT_FAILURE;
+    }
 }
