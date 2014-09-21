@@ -10,11 +10,6 @@
 #target_link_libraries( vtk-two-sheeted-hyperboloid ${VTK_LIBRARIES} vtkSignedTensor )
 #add_test( vtkTwoSheetedHyperboloidTest vtk-two-sheeted-hyperboloid )
 
-#add_executable( vtk-signed-tensor-glyph vtkSignedEigenvalueTensorGlyphTest.cxx )
-#target_link_libraries( vtk-signed-tensor-glyph ${VTK_LIBRARIES} vtkSignedTensor )
-#add_test( vtkSignedEigenvalueTensorGlyphTest vtk-signed-tensor-glyph
-  #strain_flavors_strain.vtk )
-
 #add_executable( vtk-uniaxial-load vtkUniAxialLoadingTest.cxx )
 #target_link_libraries( vtk-uniaxial-load ${VTK_LIBRARIES} vtkSignedTensor )
 #add_test( vtkUniAxialLoadingTensionTest vtk-uniaxial-load uniaxial_tension.vtk 0 )
@@ -31,10 +26,13 @@
 set(TestTensorGlyph_ARGS DATA{../Data/Input/StrainFlavorsStrain.vtk}
   DATA{../Data/Input/StrainFlavorsEigenvalues.txt}
   DATA{../Data/Input/StrainFlavorsAngles.txt})
+set(TestSignedEigenvalueTensorGlyph_ARGS DATA{../Data/Input/StrainFlavorsStrain.vtk}
+  DATA{../Data/Input/StrainFlavorsEigenvalues.txt}
+  DATA{../Data/Input/StrainFlavorsAngles.txt})
 vtk_add_test_cxx(${vtk-module}CxxTests tests
   NO_DATA
   TestTensorGlyph.cxx
-  TestSignedEigenvalueTensorGlyph.cxx,NO_VALID
+  TestSignedEigenvalueTensorGlyph.cxx
   TestSphere.cxx,NO_VALID
   TestOneSheetedHyperboloid.cxx,NO_VALID
   TestTwoSheetedHyperboloid.cxx,NO_VALID

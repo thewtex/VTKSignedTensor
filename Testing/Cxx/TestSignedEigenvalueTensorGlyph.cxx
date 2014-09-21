@@ -1,3 +1,22 @@
+/*=========================================================================
+
+  Program:   Visualization Toolkit
+  Module:    TestContourTriangulator.cxx
+
+  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
+  All rights reserved.
+  See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
+
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+     PURPOSE.  See the above copyright notice for more information.
+
+=========================================================================*/
+// This example demonstrates how to use vtkTensorGlyph
+//
+// The command line arguments are:
+// -I        => run in interactive mode; unless this is used, the program will
+//              not allow interaction and exit
 #include "vtkActor.h"
 #include "vtkActor2D.h"
 #include "vtkCamera.h"
@@ -19,6 +38,7 @@
 #include "vtkStructuredPoints.h"
 #include "vtkStructuredPointsReader.h"
 #include "vtkSignedEigenvalueTensorGlyph.h"
+#include "vtkTesting.h"
 #include "vtkTwoSheetedHyperboloidSource.h"
 #include "vtkRenderWindow.h"
 #include "vtkRenderer.h"
@@ -31,12 +51,17 @@ int TestSignedEigenvalueTensorGlyph( int argc, char * argv[] )
 {
   if ( argc < 2 )
     {
-    std::cout << "Usage: " << argv[0] << " <tensor_image>.vtk" << std::endl;
-    return 1;
+    std::cerr << "Usage: " << argv[0]
+              << " <TensorImage.vtk> <Eigenvalues.txt> <Angles.txt>"
+              << " -T TemporaryDirectory [-I]" << std::endl;
+    return EXIT_FAILURE;
     }
+  const char * tensorImageFileName = argv[1];
+  const char * eigenvaluesFileName = argv[2];
+  const char * anglesFileName = argv[3];
 
   vtkSmartPointer< vtkStructuredPointsReader > reader = vtkSmartPointer< vtkStructuredPointsReader >::New();
-  reader->SetFileName( argv[1] );
+  reader->SetFileName( tensorImageFileName );
   reader->Update();
 
   vtkSmartPointer< vtkStructuredPoints > structuredPoints = reader->GetOutput();
@@ -102,7 +127,7 @@ int TestSignedEigenvalueTensorGlyph( int argc, char * argv[] )
   vtkSmartPointer< vtkStringArray > labels = vtkSmartPointer< vtkStringArray >::New();
   labels->SetNumberOfValues( numberOfAngles + numberOfTensors + 2 );
   labels->SetName( "labels" );
-  std::ifstream tensorsFile( "strain_flavors_eigenvalues.txt", std::ifstream::in );
+  std::ifstream tensorsFile( eigenvaluesFileName, std::ifstream::in );
 
   if( !tensorsFile.is_open() )
     {
@@ -122,7 +147,7 @@ int TestSignedEigenvalueTensorGlyph( int argc, char * argv[] )
     location[1] += 1.0;
     }
   tensorsFile.close();
-  std::ifstream anglesFile( "strain_flavors_angles.txt", std::ifstream::in );
+  std::ifstream anglesFile( anglesFileName, std::ifstream::in );
   if( !anglesFile.is_open() )
     {
     std::cerr << "Could not open the angles file." << std::endl;
@@ -188,7 +213,18 @@ int TestSignedEigenvalueTensorGlyph( int argc, char * argv[] )
   pngWriter->Write();
 
   renderWindowInteractor->Initialize();
-  renderWindowInteractor->Start();
+  const int returnValue = vtkTesting::Test(argc, argv, renderWindow, 20);
+  if( returnValue == vtkTesting::DO_INTERACTOR )
+    {
+    renderWindowInteractor->Start();
+    }
 
-  return 0;
+  if ((returnValue == vtkTesting::PASSED) || (returnValue == vtkTesting::DO_INTERACTOR))
+    {
+    return EXIT_SUCCESS;
+    }
+  else
+    {
+    return EXIT_FAILURE;
+    }
 }
