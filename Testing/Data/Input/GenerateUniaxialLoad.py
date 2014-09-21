@@ -2,8 +2,6 @@
 
 import numpy as np
 
-
-
 def write_uniaxial_strain(filename, axial_strain):
     poissons_ratio = 0.3
     lateral_strain = -poissons_ratio * axial_strain
@@ -27,6 +25,6 @@ def write_uniaxial_strain(filename, axial_strain):
             f.write('\n')
 
 axial_strain = -0.05
-write_uniaxial_strain('uniaxial_compression.vtk', axial_strain)
+write_uniaxial_strain('UniaxialCompression.vtk', axial_strain)
 axial_strain = 0.05
-write_uniaxial_strain('uniaxial_tension.vtk', axial_strain)
+write_uniaxial_strain('UniaxialTension.vtk', axial_strain)

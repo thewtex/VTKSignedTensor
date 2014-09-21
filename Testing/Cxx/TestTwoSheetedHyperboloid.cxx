@@ -11,10 +11,6 @@
 #include "vtkRenderWindowInteractor.h"
 #include "vtkTesting.h"
 
-#include "vtkNew.h"
-#include "vtkWindowToImageFilter.h"
-#include "vtkPNGWriter.h"
-
 int TestTwoSheetedHyperboloid( int argc, char * argv[] )
 {
   vtkSmartPointer< vtkTwoSheetedHyperboloidSource > hyperboloid = vtkSmartPointer< vtkTwoSheetedHyperboloidSource >::New();
@@ -56,15 +52,6 @@ int TestTwoSheetedHyperboloid( int argc, char * argv[] )
   vtkSmartPointer< vtkRenderWindowInteractor > renderWindowInteractor = vtkSmartPointer< vtkRenderWindowInteractor >::New();
   renderWindowInteractor->SetRenderWindow( renderWindow );
   renderWindow->Render();
-
-  vtkNew<vtkWindowToImageFilter> windowToImage;
-  windowToImage->SetInput(renderWindow);
-  windowToImage->Update();
-
-  vtkNew< vtkPNGWriter > pngWriter;
-  pngWriter->SetFileName("/tmp/TestTwoSheetedHyperboloid.png");
-  pngWriter->SetInputConnection(windowToImage->GetOutputPort());
-  pngWriter->Write();
 
   renderWindowInteractor->Initialize();
   const int returnValue = vtkTesting::Test(argc, argv, renderWindow, 20);

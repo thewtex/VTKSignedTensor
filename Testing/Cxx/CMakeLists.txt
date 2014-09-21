@@ -1,22 +1,10 @@
-#add_executable( vtk-uniaxial-load vtkUniAxialLoadingTest.cxx )
-#target_link_libraries( vtk-uniaxial-load ${VTK_LIBRARIES} vtkSignedTensor )
-#add_test( vtkUniAxialLoadingTensionTest vtk-uniaxial-load uniaxial_tension.vtk 0 )
-#add_test( vtkUniAxialLoadingCompressionTest vtk-uniaxial-load uniaxial_compression.vtk 1 )
-
-#add_test( GenerateStrainFlavors ${CMAKE_CURRENT_SOURCE_DIR}/generate_strain_flavors.py )
-#add_test( GenerateUniaxialLoad ${CMAKE_CURRENT_SOURCE_DIR}/generate_uniaxial_load.py )
-
-#set_tests_properties( vtkTensorGlyphTest vtkSignedEigenvalueTensorGlyphTest
-  #PROPERTIES DEPENDS GenerateStrainFlavors )
-#set_tests_properties( vtkUniAxialLoadingTensionTest vtkUniAxialLoadingCompressionTest
-  #PROPERTIES DEPENDS GenerateUniaxialLoad )
-
 set(TestTensorGlyph_ARGS DATA{../Data/Input/StrainFlavorsStrain.vtk}
   DATA{../Data/Input/StrainFlavorsEigenvalues.txt}
   DATA{../Data/Input/StrainFlavorsAngles.txt})
 set(TestSignedEigenvalueTensorGlyph_ARGS DATA{../Data/Input/StrainFlavorsStrain.vtk}
   DATA{../Data/Input/StrainFlavorsEigenvalues.txt}
   DATA{../Data/Input/StrainFlavorsAngles.txt})
+set(TestUniAxialLoading_ARGS DATA{../Data/Input/UniaxialCompression.vtk} 1)
 vtk_add_test_cxx(${vtk-module}CxxTests tests
   NO_DATA
   TestTensorGlyph.cxx
@@ -24,6 +12,6 @@ vtk_add_test_cxx(${vtk-module}CxxTests tests
   TestSphere.cxx
   TestOneSheetedHyperboloid.cxx
   TestTwoSheetedHyperboloid.cxx
-  TestUniAxialLoading.cxx,NO_VALID
+  TestUniAxialLoading.cxx
   )
 vtk_test_cxx_executable(${vtk-module}CxxTests tests)

@@ -19,8 +19,7 @@
 #include "vtkRenderWindow.h"
 #include "vtkRenderer.h"
 #include "vtkRenderWindowInteractor.h"
-
-#include <iostream>
+#include "vtkTesting.h"
 
 void createGlyphs( const char * filename,
   vtkSmartPointer< vtkPolyData > & signedGlyphs,
@@ -94,8 +93,8 @@ int TestUniAxialLoading( int argc, char * argv[] )
 {
   if ( argc < 3 )
     {
-    std::cout << "Usage: " << argv[0] << " <uniaxial strain image>.vtk <tension (0) or compression (1)>" << std::endl;
-    return 1;
+    std::cout << "Usage: " << argv[0] << " <UniaxialStrainImage.vtk> <tension (0) or compression (1)>" << std::endl;
+    return EXIT_FAILURE;
     }
 
   vtkSmartPointer< vtkStructuredPointsReader > reader = vtkSmartPointer< vtkStructuredPointsReader >::New();
@@ -202,6 +201,8 @@ int TestUniAxialLoading( int argc, char * argv[] )
   arrowCenter[2] = (blockBounds[5] - blockBounds[4]) / 2.0;
   topArrowTransform->Translate( arrowCenter );
   topArrowTransform->RotateZ( 90.0 );
+  const double arrowScale = 1.5;
+  topArrowTransform->Scale( arrowScale, 1.0, 1.0 );
   topArrowActor->SetUserMatrix( topArrowTransform->GetMatrix() );
 
   vtkSmartPointer<vtkArrowSource> bottomArrow = vtkSmartPointer<vtkArrowSource>::New();
@@ -220,10 +221,11 @@ int TestUniAxialLoading( int argc, char * argv[] )
   bottomArrowActor->SetMapper( bottomArrowMapper );
   vtkSmartPointer<vtkTransform> bottomArrowTransform = vtkSmartPointer<vtkTransform>::New();
   arrowCenter[0] = (blockBounds[1] - blockBounds[0]) / 2.0;
-  arrowCenter[1] = blockBounds[2] - yLength * 3.0/2.0 - 1.0;
+  arrowCenter[1] = blockBounds[2] - yLength * 3.0/2.0 - 1.0 * arrowScale;
   arrowCenter[2] = (blockBounds[5] - blockBounds[4]) / 2.0;
   bottomArrowTransform->Translate( arrowCenter );
   bottomArrowTransform->RotateZ( 90.0 );
+  bottomArrowTransform->Scale( arrowScale, 1.0, 1.0 );
   bottomArrowActor->SetUserMatrix( bottomArrowTransform->GetMatrix() );
 
   vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
@@ -259,11 +261,24 @@ int TestUniAxialLoading( int argc, char * argv[] )
   renderWindowInteractor->SetRenderWindow( renderWindow );
 
   renderWindow->Render();
+
   // couple the cameras
   vtkCamera * camera = renderer->GetActiveCamera();
   signedRenderer->SetActiveCamera( camera );
-  renderWindowInteractor->Initialize();
-  renderWindowInteractor->Start();
 
-  return 0;
+  renderWindowInteractor->Initialize();
+  const int returnValue = vtkTesting::Test(argc, argv, renderWindow, 20);
+  if( returnValue == vtkTesting::DO_INTERACTOR )
+    {
+    renderWindowInteractor->Start();
+    }
+
+  if ((returnValue == vtkTesting::PASSED) || (returnValue == vtkTesting::DO_INTERACTOR))
+    {
+    return EXIT_SUCCESS;
+    }
+  else
+    {
+    return EXIT_FAILURE;
+    }
 }
