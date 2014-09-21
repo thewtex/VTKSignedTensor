@@ -1,7 +1,3 @@
-#add_executable( vtk-two-sheeted-hyperboloid vtkTwoSheetedHyperboloidTest.cxx )
-#target_link_libraries( vtk-two-sheeted-hyperboloid ${VTK_LIBRARIES} vtkSignedTensor )
-#add_test( vtkTwoSheetedHyperboloidTest vtk-two-sheeted-hyperboloid )
-
 #add_executable( vtk-uniaxial-load vtkUniAxialLoadingTest.cxx )
 #target_link_libraries( vtk-uniaxial-load ${VTK_LIBRARIES} vtkSignedTensor )
 #add_test( vtkUniAxialLoadingTensionTest vtk-uniaxial-load uniaxial_tension.vtk 0 )
@@ -27,7 +23,7 @@ vtk_add_test_cxx(${vtk-module}CxxTests tests
   TestSignedEigenvalueTensorGlyph.cxx
   TestSphere.cxx
   TestOneSheetedHyperboloid.cxx
-  TestTwoSheetedHyperboloid.cxx,NO_VALID
+  TestTwoSheetedHyperboloid.cxx
   TestUniAxialLoading.cxx,NO_VALID
   )
 vtk_test_cxx_executable(${vtk-module}CxxTests tests)

@@ -9,7 +9,11 @@
 #include "vtkRenderWindow.h"
 #include "vtkRenderer.h"
 #include "vtkRenderWindowInteractor.h"
-#include <iostream>
+#include "vtkTesting.h"
+
+#include "vtkNew.h"
+#include "vtkWindowToImageFilter.h"
+#include "vtkPNGWriter.h"
 
 int TestTwoSheetedHyperboloid( int argc, char * argv[] )
 {
@@ -51,8 +55,30 @@ int TestTwoSheetedHyperboloid( int argc, char * argv[] )
 
   vtkSmartPointer< vtkRenderWindowInteractor > renderWindowInteractor = vtkSmartPointer< vtkRenderWindowInteractor >::New();
   renderWindowInteractor->SetRenderWindow( renderWindow );
+  renderWindow->Render();
 
-  renderWindowInteractor->Start();
+  vtkNew<vtkWindowToImageFilter> windowToImage;
+  windowToImage->SetInput(renderWindow);
+  windowToImage->Update();
 
-  return 0;
+  vtkNew< vtkPNGWriter > pngWriter;
+  pngWriter->SetFileName("/tmp/TestTwoSheetedHyperboloid.png");
+  pngWriter->SetInputConnection(windowToImage->GetOutputPort());
+  pngWriter->Write();
+
+  renderWindowInteractor->Initialize();
+  const int returnValue = vtkTesting::Test(argc, argv, renderWindow, 20);
+  if( returnValue == vtkTesting::DO_INTERACTOR )
+    {
+    renderWindowInteractor->Start();
+    }
+
+  if ((returnValue == vtkTesting::PASSED) || (returnValue == vtkTesting::DO_INTERACTOR))
+    {
+    return EXIT_SUCCESS;
+    }
+  else
+    {
+    return EXIT_FAILURE;
+    }
 }
