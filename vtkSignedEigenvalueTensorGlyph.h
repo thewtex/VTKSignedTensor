@@ -74,8 +74,8 @@
 // .SECTION See Also
 // vtkGlyph3D vtkPointLoad vtkHyperStreamline
 
-#ifndef __vtkSignedEigenvalueTensorGlyph_h
-#define __vtkSignedEigenvalueTensorGlyph_h
+#ifndef vtkSignedEigenvalueTensorGlyph_h
+#define vtkSignedEigenvalueTensorGlyph_h
 
 #include "SignedTensorModule.h" // for export macro
 #include "vtkPolyDataAlgorithm.h"

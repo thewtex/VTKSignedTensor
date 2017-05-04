@@ -33,8 +33,8 @@
 // compute the normals for the polygons.  If they are needed, the
 // vtkPolyDataNormals algorithm is a possibility.
 
-#ifndef __vtkTwoSheetedHyperboloidSource_h
-#define __vtkTwoSheetedHyperboloidSource_h
+#ifndef vtkTwoSheetedHyperboloidSource_h
+#define vtkTwoSheetedHyperboloidSource_h
 
 #include "SignedTensorModule.h" // for export macro
 #include "vtkPolyDataAlgorithm.h"
