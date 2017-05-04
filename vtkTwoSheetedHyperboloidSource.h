@@ -45,7 +45,7 @@ class SIGNEDTENSOR_EXPORT vtkTwoSheetedHyperboloidSource : public vtkPolyDataAlg
 {
 public:
   vtkTypeMacro(vtkTwoSheetedHyperboloidSource,vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) VTK_OVERRIDE;
 
   // Description:
   // Construct two-sheeted hyperboloid with z_max=0.5 and
@@ -101,8 +101,8 @@ protected:
   vtkTwoSheetedHyperboloidSource(int res=8);
   ~vtkTwoSheetedHyperboloidSource() {}
 
-  int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
-  int RequestInformation(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
+  int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *) VTK_OVERRIDE;
+  int RequestInformation(vtkInformation *, vtkInformationVector **, vtkInformationVector *) VTK_OVERRIDE;
 
   double ZMax;
   double ShapeParameters[3];
