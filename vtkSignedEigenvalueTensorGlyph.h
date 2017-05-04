@@ -74,8 +74,8 @@
 // .SECTION See Also
 // vtkGlyph3D vtkPointLoad vtkHyperStreamline
 
-#ifndef __vtkSignedEigenvalueTensorGlyph_h
-#define __vtkSignedEigenvalueTensorGlyph_h
+#ifndef vtkSignedEigenvalueTensorGlyph_h
+#define vtkSignedEigenvalueTensorGlyph_h
 
 #include "SignedTensorModule.h" // for export macro
 #include "vtkPolyDataAlgorithm.h"
@@ -84,7 +84,7 @@ class SIGNEDTENSOR_EXPORT vtkSignedEigenvalueTensorGlyph : public vtkPolyDataAlg
 {
 public:
   vtkTypeMacro(vtkSignedEigenvalueTensorGlyph,vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) VTK_OVERRIDE;
 
   // Description
   // Construct object with scaling on and scale factor 1.0. Eigenvalues are
@@ -182,9 +182,9 @@ protected:
   vtkSignedEigenvalueTensorGlyph();
   ~vtkSignedEigenvalueTensorGlyph();
 
-  virtual int RequestUpdateExtent(vtkInformation *,  vtkInformationVector **, vtkInformationVector *);
-  virtual int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
-  virtual int FillInputPortInformation(int port, vtkInformation *info);
+  virtual int RequestUpdateExtent(vtkInformation *,  vtkInformationVector **, vtkInformationVector *) VTK_OVERRIDE;
+  virtual int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *) VTK_OVERRIDE;
+  virtual int FillInputPortInformation(int port, vtkInformation *info) VTK_OVERRIDE;
 
   int Scaling; // Determine whether scaling of geometry is performed
   double ScaleFactor; // Scale factor to use to scale geometry
@@ -196,8 +196,8 @@ protected:
   double Length; // Distance, in x, from the origin to the end of the glyph
 
 private:
-  vtkSignedEigenvalueTensorGlyph(const vtkSignedEigenvalueTensorGlyph&);  // Not implemented.
-  void operator=(const vtkSignedEigenvalueTensorGlyph&);  // Not implemented.
+  vtkSignedEigenvalueTensorGlyph(const vtkSignedEigenvalueTensorGlyph&) VTK_DELETE_FUNCTION;
+  void operator=(const vtkSignedEigenvalueTensorGlyph&) VTK_DELETE_FUNCTION;
 };
 
 #endif

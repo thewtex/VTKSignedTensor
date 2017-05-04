@@ -33,8 +33,8 @@
 // compute the normals for the polygons.  If they are needed, the
 // vtkPolyDataNormals algorithm is a possibility.
 
-#ifndef __vtkTwoSheetedHyperboloidSource_h
-#define __vtkTwoSheetedHyperboloidSource_h
+#ifndef vtkTwoSheetedHyperboloidSource_h
+#define vtkTwoSheetedHyperboloidSource_h
 
 #include "SignedTensorModule.h" // for export macro
 #include "vtkPolyDataAlgorithm.h"
@@ -45,7 +45,7 @@ class SIGNEDTENSOR_EXPORT vtkTwoSheetedHyperboloidSource : public vtkPolyDataAlg
 {
 public:
   vtkTypeMacro(vtkTwoSheetedHyperboloidSource,vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) VTK_OVERRIDE;
 
   // Description:
   // Construct two-sheeted hyperboloid with z_max=0.5 and
@@ -101,8 +101,8 @@ protected:
   vtkTwoSheetedHyperboloidSource(int res=8);
   ~vtkTwoSheetedHyperboloidSource() {}
 
-  int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
-  int RequestInformation(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
+  int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *) VTK_OVERRIDE;
+  int RequestInformation(vtkInformation *, vtkInformationVector **, vtkInformationVector *) VTK_OVERRIDE;
 
   double ZMax;
   double ShapeParameters[3];
@@ -112,8 +112,8 @@ protected:
   int QuadrilateralTessellation;
 
 private:
-  vtkTwoSheetedHyperboloidSource(const vtkTwoSheetedHyperboloidSource&);  // Not implemented.
-  void operator=(const vtkTwoSheetedHyperboloidSource&);  // Not implemented.
+  vtkTwoSheetedHyperboloidSource(const vtkTwoSheetedHyperboloidSource&) VTK_DELETE_FUNCTION;
+  void operator=(const vtkTwoSheetedHyperboloidSource&) VTK_DELETE_FUNCTION;
 };
 
 #endif
