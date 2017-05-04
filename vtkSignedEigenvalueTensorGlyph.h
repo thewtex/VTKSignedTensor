@@ -196,8 +196,8 @@ protected:
   double Length; // Distance, in x, from the origin to the end of the glyph
 
 private:
-  vtkSignedEigenvalueTensorGlyph(const vtkSignedEigenvalueTensorGlyph&);  // Not implemented.
-  void operator=(const vtkSignedEigenvalueTensorGlyph&);  // Not implemented.
+  vtkSignedEigenvalueTensorGlyph(const vtkSignedEigenvalueTensorGlyph&) VTK_DELETE_FUNCTION;
+  void operator=(const vtkSignedEigenvalueTensorGlyph&) VTK_DELETE_FUNCTION;
 };
 
 #endif

@@ -112,8 +112,8 @@ protected:
   int QuadrilateralTessellation;
 
 private:
-  vtkTwoSheetedHyperboloidSource(const vtkTwoSheetedHyperboloidSource&);  // Not implemented.
-  void operator=(const vtkTwoSheetedHyperboloidSource&);  // Not implemented.
+  vtkTwoSheetedHyperboloidSource(const vtkTwoSheetedHyperboloidSource&) VTK_DELETE_FUNCTION;
+  void operator=(const vtkTwoSheetedHyperboloidSource&) VTK_DELETE_FUNCTION;
 };
 
 #endif
