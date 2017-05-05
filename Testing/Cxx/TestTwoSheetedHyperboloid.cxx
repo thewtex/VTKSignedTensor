@@ -57,16 +57,16 @@ int TestTwoSheetedHyperboloid( int argc, char * argv[] )
   renderWindowInteractor->Initialize();
   const int returnValue = vtkTesting::Test(argc, argv, renderWindow, 20);
   if( returnValue == vtkTesting::DO_INTERACTOR )
-    {
+  {
     renderWindowInteractor->Start();
-    }
+  }
 
   if ((returnValue == vtkTesting::PASSED) || (returnValue == vtkTesting::DO_INTERACTOR))
-    {
+  {
     return EXIT_SUCCESS;
-    }
+  }
   else
-    {
+  {
     return EXIT_FAILURE;
-    }
+  }
 }

@@ -73,15 +73,15 @@ int vtkSignedEigenvalueTensorGlyph::RequestUpdateExtent(
 
   const int numberOfGeometrySources = inputVector[1]->GetNumberOfInformationObjects();
   for( int ii = 0; ii < numberOfGeometrySources; ++ii )
-    {
+  {
     sourceInfo = inputVector[1]->GetInformationObject(ii);
     if (sourceInfo)
-      {
+    {
       sourceInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_PIECE_NUMBER(), 0);
       sourceInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_PIECES(), 1);
       sourceInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
-      }
     }
+  }
 
   inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_PIECE_NUMBER(),
     outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_PIECE_NUMBER()));
@@ -115,15 +115,15 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
   //         3         | geometry for three negative eigenvalue
   vtkPolyData * sources[numberOfGeometrySources];
   for( int ii = 1; ii <= numberOfGeometrySources; ++ii )
-    {
+  {
     vtkInformation *sourceInfo = inputVector[ii]->GetInformationObject( 0 );
     if( !sourceInfo )
-      {
+    {
       vtkErrorMacro(<< "Geometry source " << ii << " is NULL.");
-      }
+    }
     sources[ii-1] = vtkPolyData::SafeDownCast(
       sourceInfo->Get(vtkDataObject::DATA_OBJECT()));
-    }
+  }
   vtkPolyData *output = vtkPolyData::SafeDownCast(
     outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
@@ -136,10 +136,10 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
   const vtkIdType numberOfInputPts = input->GetNumberOfPoints();
 
   if ( !inputTensors || numberOfInputPts < 1 )
-    {
+  {
     vtkErrorMacro(<<"No data to glyph!");
     return 1;
-    }
+  }
 
   //
   // Allocate storage for output PolyData
@@ -153,25 +153,25 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
   int sourcesMaxCellSize = 0;
   bool sourcesPointDataHaveNormals = false;
   for( int ii = 0; ii < numberOfGeometrySources; ++ii )
-    {
+  {
     vtkPoints *sourcePts = sources[ii]->GetPoints();
     vtkIdType numberOfSourcePts = sourcePts->GetNumberOfPoints();
     if( numberOfSourcePts > maxNumberOfSourcePoints )
-      {
+    {
       maxNumberOfSourcePoints = numberOfSourcePts;
-      }
+    }
 
     const vtkIdType numberOfSourceCells = sources[ii]->GetNumberOfCells();
     if( numberOfSourceCells > maxNumberOfSourceCells )
-      {
+    {
       maxNumberOfSourceCells = numberOfSourceCells;
-      }
+    }
 
     const int maxCellSize = sources[ii]->GetMaxCellSize();
     if( maxCellSize > sourcesMaxCellSize )
-      {
+    {
       sourcesMaxCellSize = maxCellSize;
-      }
+    }
 
     vtkCellArray *sourceCells;
     vtkIdType numberOfCells;
@@ -179,50 +179,50 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
     sourceCells = sources[ii]->GetVerts();
     numberOfCells = sourceCells->GetNumberOfCells();
     if ( numberOfCells > 0 )
-      {
+    {
       vtkIdType size = sourceCells->GetSize();
       if( size > maxVertsSize )
-        {
+      {
         maxVertsSize = size;
-        }
       }
+    }
     sourceCells = sources[ii]->GetLines();
     numberOfCells = sourceCells->GetNumberOfCells();
     if ( numberOfCells > 0 )
-      {
+    {
       vtkIdType size = sourceCells->GetSize();
       if( size > maxLinesSize )
-        {
+      {
         maxLinesSize = size;
-        }
       }
+    }
     sourceCells = sources[ii]->GetPolys();
     numberOfCells = sourceCells->GetNumberOfCells();
     if ( numberOfCells > 0 )
-      {
+    {
       vtkIdType size = sourceCells->GetSize();
       if( size > maxPolysSize )
-        {
+      {
         maxPolysSize = size;
-        }
       }
+    }
     sourceCells = sources[ii]->GetStrips();
     numberOfCells = sourceCells->GetNumberOfCells();
     if ( numberOfCells > 0 )
-      {
+    {
       vtkIdType size = sourceCells->GetSize();
       if( size > maxStripsSize )
-        {
+      {
         maxStripsSize = size;
-        }
       }
+    }
 
     vtkPointData * pointData = sources[ii]->GetPointData();
     if( pointData->GetNormals() )
-      {
+    {
       sourcesPointDataHaveNormals = true;
-      }
-    } // end for each glyph source
+    }
+  } // end for each glyph source
   vtkCellArray *cells = vtkCellArray::New();
   cells->Allocate( numberOfInputPts * maxVertsSize );
   output->SetVerts( cells );
@@ -249,25 +249,25 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
   if (this->ColorGlyphs &&
       ((this->ColorMode == COLOR_BY_EIGENVALUES) ||
        (inputScalars && (this->ColorMode == COLOR_BY_SCALARS)) ) )
-    {
+  {
     newScalars = vtkFloatArray::New();
     newScalars->Allocate( numberOfInputPts * maxNumberOfSourcePoints );
     if (this->ColorMode == COLOR_BY_EIGENVALUES)
-      {
-      newScalars->SetName("MaxEigenvalue");
-      }
-    else
-      {
-      newScalars->SetName(inputScalars->GetName());
-      }
-    }
-  if ( sourcesPointDataHaveNormals )
     {
+      newScalars->SetName("MaxEigenvalue");
+    }
+    else
+    {
+      newScalars->SetName(inputScalars->GetName());
+    }
+  }
+  if ( sourcesPointDataHaveNormals )
+  {
     newNormals = vtkFloatArray::New();
     newNormals->SetNumberOfComponents(3);
     newNormals->SetName("Normals");
     newNormals->Allocate( 3 * numberOfInputPts * maxNumberOfSourcePoints );
-    }
+  }
 
   //
   // Traverse all Input points, transforming glyph at Source points
@@ -294,21 +294,21 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
 
   vtkIdType ptIncr = 0;
   for (vtkIdType inputPointId = 0; inputPointId < numberOfInputPts; ++inputPointId)
-    {
+  {
     // Translation is postponed
 
     inputTensors->GetTuple(inputPointId, tensor);
 
     // compute orientation vectors and scale factors from tensor
     if ( this->ExtractEigenvalues ) // extract appropriate eigenfunctions
-      {
+    {
       for (int jj = 0; jj < 3; ++jj)
-        {
+      {
         for (int ii = 0; ii < 3; ++ii)
-          {
+        {
           tensorMatrix[ii][jj] = tensor[ii+3*jj];
-          }
         }
+      }
       vtkMath::Diagonalize3x3(tensorMatrix, eigenvalues, eigenvectors);
 
       //copy eigenvectors
@@ -321,19 +321,19 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
       zEigenvector[0] = eigenvectors[0][2];
       zEigenvector[1] = eigenvectors[1][2];
       zEigenvector[2] = eigenvectors[2][2];
-      }
+    }
     else //use tensor columns as eigenvectors
-      {
+    {
       for (int ii = 0; ii < 3; ++ii)
-        {
+      {
         xEigenvector[ii] = tensor[ii];
         yEigenvector[ii] = tensor[ii+3];
         zEigenvector[ii] = tensor[ii+6];
-        }
+      }
       eigenvalues[0] = vtkMath::Normalize(xEigenvector);
       eigenvalues[1] = vtkMath::Normalize(yEigenvector);
       eigenvalues[2] = vtkMath::Normalize(zEigenvector);
-      }
+    }
 
     // compute scale factors
     eigenvalues[0] *= this->ScaleFactor;
@@ -342,55 +342,55 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
 
     double maxScale = 0.0;
     if ( this->ClampScaling )
-      {
+    {
       for (int ii = 0; ii < 3; ++ii)
-        {
+      {
         if ( maxScale < fabs(eigenvalues[ii]) )
-          {
-          maxScale = fabs(eigenvalues[ii]);
-          }
-        }
-      if ( maxScale > this->MaxScaleFactor )
         {
-        maxScale = this->MaxScaleFactor / maxScale;
-        for (int ii = 0; ii < 3; ++ii)
-          {
-          eigenvalues[ii] *= maxScale; //preserve overall shape of glyph
-          }
+          maxScale = fabs(eigenvalues[ii]);
         }
       }
+      if ( maxScale > this->MaxScaleFactor )
+      {
+        maxScale = this->MaxScaleFactor / maxScale;
+        for (int ii = 0; ii < 3; ++ii)
+        {
+          eigenvalues[ii] *= maxScale; //preserve overall shape of glyph
+        }
+      }
+    }
 
     // normalization is postponed
 
     // make sure scale is okay (non-zero) and scale data
     maxScale = 0.0;
     for (int ii = 0; ii < 3; ++ii)
-      {
+    {
       if ( eigenvalues[ii] > maxScale )
-        {
+      {
         maxScale = eigenvalues[ii];
-        }
       }
+    }
     if ( maxScale == 0.0 )
-      {
+    {
       maxScale = 1.0;
-      }
+    }
     for (int ii = 0; ii < 3; ++ii)
-      {
+    {
       if ( eigenvalues[ii] == 0.0 )
-        {
+      {
         eigenvalues[ii] = maxScale * 1.0e-06;
-        }
       }
+    }
 
     int numberOfNegativeEigenvalues = 0;
     for (int ii = 0; ii < 3; ++ii)
-      {
+    {
       if ( eigenvalues[ii] < 0.0 )
-        {
+      {
         ++numberOfNegativeEigenvalues;
-        }
       }
+    }
 
     vtkPolyData * source = sources[numberOfNegativeEigenvalues];
     vtkIdType numberOfSourcePoints = source->GetNumberOfPoints();
@@ -402,18 +402,18 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
     vtkIdList *cellPts;
     int numberOfCellPoints;
     for (vtkIdType cellId = 0; cellId < numberOfSourceCells; cellId++)
-      {
+    {
       cell = source->GetCell(cellId);
       cellPts = cell->GetPointIds();
       numberOfCellPoints = cellPts->GetNumberOfIds();
       // This variable may be removed, but that
       // will not improve readability
       for (int ii = 0; ii < numberOfCellPoints; ++ii)
-        {
+      {
         pts[ii] = cellPts->GetId(ii) + ptIncr;
-        }
-      output->InsertNextCell(cell->GetCellType(), numberOfCellPoints, pts);
       }
+      output->InsertNextCell(cell->GetCellType(), numberOfCellPoints, pts);
+    }
 
 
     // Remove previous scales ...
@@ -439,27 +439,27 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
     transform->Scale(eigenvalues[0], eigenvalues[1], eigenvalues[2]);
 
     if( numberOfNegativeEigenvalues == 1 )
-      {
+    {
       if( eigenvalues[0] < 0.0 )
-        {
-        transform->RotateY(-90.0);
-        }
-      else if( eigenvalues[1] < 0.0 )
-        {
-        transform->RotateX(90.0);
-        }
-      }
-    if( numberOfNegativeEigenvalues == 2 )
       {
-      if( eigenvalues[0] >= 0.0 )
-        {
         transform->RotateY(-90.0);
-        }
-      else if( eigenvalues[1] >= 0.0 )
-        {
-        transform->RotateX(90.0);
-        }
       }
+      else if( eigenvalues[1] < 0.0 )
+      {
+        transform->RotateX(90.0);
+      }
+    }
+    if( numberOfNegativeEigenvalues == 2 )
+    {
+      if( eigenvalues[0] >= 0.0 )
+      {
+        transform->RotateY(-90.0);
+      }
+      else if( eigenvalues[1] >= 0.0 )
+      {
+        transform->RotateX(90.0);
+      }
+    }
 
 
     // multiply points (and normals if available) by resulting
@@ -471,46 +471,46 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
     // and append the results to outPts.
     vtkDataArray *sourceNormals = source->GetPointData()->GetNormals();
     if ( sourceNormals )
-      {
+    {
       // a negative determinant means the transform turns the
       // glyph surface inside out, and its surface normals all
       // point inward. The following scale corrects the surface
       // normals to point outward.
       if (transform->GetMatrix()->Determinant() < 0)
-        {
+      {
         transform->Scale(-1.0,-1.0,-1.0);
-        }
-      transform->TransformNormals(sourceNormals, newNormals);
       }
+      transform->TransformNormals(sourceNormals, newNormals);
+    }
 
       // Copy point data from source
     if ( this->ColorGlyphs && inputScalars &&
          (this->ColorMode == COLOR_BY_SCALARS) )
-      {
+    {
       double scalar = inputScalars->GetComponent(inputPointId, 0);
       for (int ii = 0; ii < numberOfInputPts; ++ii)
-        {
+      {
         newScalars->InsertTuple(ptIncr+ii, &scalar);
-        }
       }
+    }
     else if (this->ColorGlyphs &&
              (this->ColorMode == COLOR_BY_EIGENVALUES) )
-      {
+    {
       double scalar = eigenvalues[0];
       for (int ii = 0; ii < numberOfSourcePoints; ++ii)
-        {
-        newScalars->InsertTuple(ptIncr+ii, &scalar);
-        }
-      }
-    else
       {
-      for (int ii=0; ii < numberOfSourcePoints; ++ii)
-        {
-        outputPointData->CopyData(inputPointData, ii, ptIncr+ii);
-        }
+        newScalars->InsertTuple(ptIncr+ii, &scalar);
       }
-    ptIncr += numberOfSourcePoints;
     }
+    else
+    {
+      for (int ii=0; ii < numberOfSourcePoints; ++ii)
+      {
+        outputPointData->CopyData(inputPointData, ii, ptIncr+ii);
+      }
+    }
+    ptIncr += numberOfSourcePoints;
+  }
   vtkDebugMacro(<<"Generated " << numberOfInputPts <<" tensor glyphs");
   //
   // Update output and release memory
@@ -521,17 +521,17 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
   newPts->Delete();
 
   if ( newScalars )
-    {
+  {
     int idx = outputPointData->AddArray(newScalars);
     outputPointData->SetActiveAttribute(idx, vtkDataSetAttributes::SCALARS);
     newScalars->Delete();
-    }
+  }
 
   if ( newNormals )
-    {
+  {
     outputPointData->SetNormals(newNormals);
     newNormals->Delete();
-    }
+  }
 
   output->Squeeze();
   transform->Delete();
@@ -544,36 +544,36 @@ int vtkSignedEigenvalueTensorGlyph::RequestData(
 void vtkSignedEigenvalueTensorGlyph::SetSourceConnection(int id, vtkAlgorithmOutput* algOutput)
 {
   if (id < 0)
-    {
+  {
     vtkErrorMacro("Bad index " << id << " for source.");
     return;
-    }
+  }
 
   int numConnections = this->GetNumberOfInputConnections(1);
   if (id < numConnections)
-    {
+  {
     this->SetNthInputConnection(1, id, algOutput);
-    }
+  }
   else if (id == numConnections && algOutput)
-    {
+  {
     this->AddInputConnection(1, algOutput);
-    }
+  }
   else if (algOutput)
-    {
+  {
     vtkWarningMacro("The source id provided is larger than the maximum "
                     "source id, using " << numConnections << " instead.");
     this->AddInputConnection(1, algOutput);
-    }
+  }
 }
 
 //----------------------------------------------------------------------------
 int vtkSignedEigenvalueTensorGlyph::FillInputPortInformation(int port, vtkInformation *info)
 {
   if (port >= 1)
-    {
+  {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPolyData");
     return 1;
-    }
+  }
   info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
   return 1;
 }

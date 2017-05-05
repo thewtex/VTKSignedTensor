@@ -92,10 +92,10 @@ void createGlyphs( const char * filename,
 int TestUniAxialLoading( int argc, char * argv[] )
 {
   if ( argc < 3 )
-    {
+  {
     std::cout << "Usage: " << argv[0] << " <UniaxialStrainImage.vtk> <tension (0) or compression (1)>" << std::endl;
     return EXIT_FAILURE;
-    }
+  }
 
   vtkSmartPointer< vtkStructuredPointsReader > reader = vtkSmartPointer< vtkStructuredPointsReader >::New();
   reader->SetFileName( argv[1] );
@@ -107,9 +107,9 @@ int TestUniAxialLoading( int argc, char * argv[] )
 
   bool tension = false;
   if( argv[2][0] == '0' )
-    {
+  {
     tension = true;
-    }
+  }
 
   std::cout << "block bounds: " << blockBounds[0] << " " << blockBounds[1] << std::endl;
 
@@ -183,13 +183,13 @@ int TestUniAxialLoading( int argc, char * argv[] )
 
   vtkSmartPointer<vtkArrowSource> topArrow = vtkSmartPointer<vtkArrowSource>::New();
   if( tension )
-    {
+  {
     topArrow->InvertOff();
-    }
+  }
   else
-    {
+  {
     topArrow->InvertOn();
-    }
+  }
   vtkSmartPointer<vtkPolyDataMapper> topArrowMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   topArrowMapper->SetInputConnection( topArrow->GetOutputPort() );
   vtkSmartPointer<vtkActor> topArrowActor = vtkSmartPointer<vtkActor>::New();
@@ -207,13 +207,13 @@ int TestUniAxialLoading( int argc, char * argv[] )
 
   vtkSmartPointer<vtkArrowSource> bottomArrow = vtkSmartPointer<vtkArrowSource>::New();
   if( tension )
-    {
+  {
     bottomArrow->InvertOn();
-    }
+  }
   else
-    {
+  {
     bottomArrow->InvertOff();
-    }
+  }
   vtkSmartPointer<vtkPolyDataMapper> bottomArrowMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   bottomArrowMapper->SetInputConnection( bottomArrow->GetOutputPort() );
   vtkSmartPointer<vtkActor> bottomArrowActor = vtkSmartPointer<vtkActor>::New();
@@ -269,16 +269,16 @@ int TestUniAxialLoading( int argc, char * argv[] )
   renderWindowInteractor->Initialize();
   const int returnValue = vtkTesting::Test(argc, argv, renderWindow, 20);
   if( returnValue == vtkTesting::DO_INTERACTOR )
-    {
+  {
     renderWindowInteractor->Start();
-    }
+  }
 
   if ((returnValue == vtkTesting::PASSED) || (returnValue == vtkTesting::DO_INTERACTOR))
-    {
+  {
     return EXIT_SUCCESS;
-    }
+  }
   else
-    {
+  {
     return EXIT_FAILURE;
-    }
+  }
 }

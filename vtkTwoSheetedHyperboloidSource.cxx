@@ -67,15 +67,15 @@ int vtkTwoSheetedHyperboloidSource::RequestData(
 
   // We will stream over the theta angle.
   if (numPieces > this->ThetaResolution)
-    {
+  {
     numPieces = this->ThetaResolution;
-    }
+  }
   if (piece >= numPieces)
-    {
+  {
     // Although the super class should take care of this,
     // it cannot hurt to check here.
     return 1;
-    }
+  }
 
   // I want to modify the ivars resoultion start theta and end theta,
   // so I will make local copies of them.  These might be able to be merged
@@ -120,9 +120,9 @@ int vtkTwoSheetedHyperboloidSource::RequestData(
   // Check data, determine increments, and convert to radians
 
   if (fabs(localStartTheta - localEndTheta) < 360.0)
-    {
+  {
     ++localThetaResolution;
-    }
+  }
   localStartTheta *= vtkMath::Pi() / 180.0;
   localEndTheta *= vtkMath::Pi() / 180.0;
   deltaTheta = (localEndTheta - localStartTheta) / localThetaResolution;
@@ -156,35 +156,35 @@ int vtkTwoSheetedHyperboloidSource::RequestData(
   // north sheet
   double theta = localStartTheta;
   for (int ii = 0; ii < localThetaResolution; ++ii)
-    {
+  {
     double vParam = vStart + deltaV;
     for (int jj = 0; jj < zResolution/2 - 1; ++jj)
-      {
+    {
       location[0] = this->ShapeParameters[0] * sinh(vParam) * cos(theta) + this->Center[0];
       location[1] = this->ShapeParameters[1] * sinh(vParam) * sin(theta) + this->Center[1];
       location[2] = this->ShapeParameters[2] * cosh(vParam) + this->Center[2];
       newPoints->InsertNextPoint(location);
       vParam += deltaV;
-      }
+    }
     theta += deltaTheta;
     this->UpdateProgress (0.10 + 0.25*ii / static_cast< double >(localThetaResolution));
-    }
+  }
   // south sheet
   theta = localStartTheta;
   for (int ii = 0; ii < localThetaResolution; ++ii)
-    {
+  {
     double vParam = vStart + deltaV;
     for (int jj = 0; jj < zResolution/2 - 1; ++jj)
-      {
+    {
       location[0] = this->ShapeParameters[0] * sinh(vParam) * cos(theta) + this->Center[0];
       location[1] = this->ShapeParameters[1] * sinh(vParam) * sin(theta) + this->Center[1];
       location[2] = - this->ShapeParameters[2] * cosh(vParam) + this->Center[2];
       newPoints->InsertNextPoint(location);
       vParam += deltaV;
-      }
+    }
     theta += deltaTheta;
     this->UpdateProgress (0.10 + 0.50*ii / static_cast< double >(localThetaResolution));
-    }
+  }
 
   // Generate mesh connectivity
   const int nonVertexSheetZResolution = zResolution/2 - 1;
@@ -192,77 +192,77 @@ int vtkTwoSheetedHyperboloidSource::RequestData(
   vtkIdType pts[4];
 
   if (fabs(localStartTheta - localEndTheta) < 2.0 * vtkMath::Pi())
-    {
+  {
     --localThetaResolution;
-    }
+  }
 
   // Around north sheet vertex
   for (int ii = 0; ii < localThetaResolution; ++ii)
-    {
+  {
     pts[0] = nonVertexSheetZResolution*ii + numberOfSheetVertices;
     pts[1] = (nonVertexSheetZResolution*(ii+1) % base) + numberOfSheetVertices;
     pts[2] = 0;
     newPolys->InsertNextCell(3, pts);
-    }
+  }
 
   // Around south sheet vertex
   const int southSheetOffset = numberOfSheetVertices + base;
   for (int ii = 0; ii < localThetaResolution; ++ii)
-    {
+  {
     pts[0] = nonVertexSheetZResolution*ii + southSheetOffset;
     pts[2] = ((nonVertexSheetZResolution*(ii+1)) % base) + southSheetOffset;
     pts[1] = 1;
     newPolys->InsertNextCell(3, pts);
-    }
+  }
   this->UpdateProgress (0.70);
 
   // bands off sheet verticies
   // north sheet
   for (int ii = 0; ii < localThetaResolution; ++ii)
-    {
+  {
     for (int jj = 0; jj < nonVertexSheetZResolution - 1; ++jj)
-      {
+    {
       pts[0] = nonVertexSheetZResolution*ii + jj + numberOfSheetVertices;
       pts[1] = pts[0] + 1;
       pts[2] = ((nonVertexSheetZResolution*(ii + 1) + jj) % base) + numberOfSheetVertices + 1;
       if ( !this->QuadrilateralTessellation )
-        {
+      {
         newPolys->InsertNextCell(3, pts);
         pts[1] = pts[2];
         pts[2] = pts[1] - 1;
         newPolys->InsertNextCell(3, pts);
-        }
+      }
       else
-        {
+      {
         pts[3] = pts[2] - 1;
         newPolys->InsertNextCell(4, pts);
-        }
       }
-    this->UpdateProgress (0.70 + 0.15*ii/static_cast<double>(localThetaResolution));
     }
+    this->UpdateProgress (0.70 + 0.15*ii/static_cast<double>(localThetaResolution));
+  }
   // south sheet
   for (int ii = 0; ii < localThetaResolution; ++ii)
-    {
+  {
     for (int jj = 0; jj < nonVertexSheetZResolution - 1; ++jj)
-      {
+    {
       pts[0] = nonVertexSheetZResolution*ii + jj + southSheetOffset;
       pts[1] = pts[0] + 1;
       pts[2] = ((nonVertexSheetZResolution*(ii + 1) + jj) % base) + southSheetOffset + 1;
       if ( !this->QuadrilateralTessellation )
-        {
+      {
         newPolys->InsertNextCell(3, pts);
         pts[1] = pts[2];
         pts[2] = pts[1] - 1;
         newPolys->InsertNextCell(3, pts);
-        }
+      }
       else
-        {
+      {
         pts[3] = pts[2] - 1;
         newPolys->InsertNextCell(4, pts);
-        }
       }
-    this->UpdateProgress (0.70 + 0.30*ii/static_cast<double>(localThetaResolution));
     }
+    this->UpdateProgress (0.70 + 0.30*ii/static_cast<double>(localThetaResolution));
+  }
 
   // Update ourselves and release memeory
   //

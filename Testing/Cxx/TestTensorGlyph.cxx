@@ -43,12 +43,12 @@
 int TestTensorGlyph( int argc, char * argv[] )
 {
   if ( argc < 2 )
-    {
+  {
     std::cerr << "Usage: " << argv[0]
               << " <TensorImage.vtk>"
               << " -T TemporaryDirectory [-I]" << std::endl;
     return EXIT_FAILURE;
-    }
+  }
   const char * tensorImageFileName = argv[1];
 
   vtkNew<vtkTesting> testHelper;
@@ -128,16 +128,16 @@ int TestTensorGlyph( int argc, char * argv[] )
   renderWindowInteractor->Initialize();
   const int returnValue = vtkTesting::Test(argc, argv, renderWindow, 20);
   if( returnValue == vtkTesting::DO_INTERACTOR )
-    {
+  {
     renderWindowInteractor->Start();
-    }
+  }
 
   if ((returnValue == vtkTesting::PASSED) || (returnValue == vtkTesting::DO_INTERACTOR))
-    {
+  {
     return EXIT_SUCCESS;
-    }
+  }
   else
-    {
+  {
     return EXIT_FAILURE;
-    }
+  }
 }

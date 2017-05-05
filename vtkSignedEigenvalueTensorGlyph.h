@@ -105,9 +105,9 @@ public:
   //         3         | geometry for three negative eigenvalue
   void SetSourceConnection(int id, vtkAlgorithmOutput* algOutput);
   void SetSourceConnection(vtkAlgorithmOutput* algOutput)
-    {
+  {
       this->SetSourceConnection(0, algOutput);
-    }
+  }
 
   // Description:
   // Turn on/off scaling of glyph with eigenvalues.
