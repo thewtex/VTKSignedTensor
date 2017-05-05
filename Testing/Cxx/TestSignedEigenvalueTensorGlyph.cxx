@@ -88,6 +88,7 @@ int TestSignedEigenvalueTensorGlyph( int argc, char * argv[] )
   tensorGlyph->SetExtractEigenvalues( true );
   tensorGlyph->SetScaleFactor( 0.7 );
   tensorGlyph->SetScaling( true );
+  tensorGlyph->Print( std::cout );
 
   // this is needed to prevent some of the glyphs going black.
   // taken from Graphics/Testing/Python/TestTensorGlyph.py

@@ -21,6 +21,7 @@ int TestTwoSheetedHyperboloid( int argc, char * argv[] )
   massProp->SetInputConnection( hyperboloid->GetOutputPort() );
   massProp->Update();
   std::cout << "The hyperboloid's surface area is: " << 2*massProp->GetSurfaceArea() << std::endl;
+  hyperboloid->Print( std::cout );
 
   vtkSmartPointer< vtkPolyDataNormals > normals = vtkSmartPointer< vtkPolyDataNormals >::New();
   normals->SetInputConnection( hyperboloid->GetOutputPort() );
